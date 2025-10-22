@@ -1,15 +1,17 @@
-import React, { useState, useEffect }  from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import TaskCard from './TaskCard.jsx';
+import InfoView from './InfoView.jsx';
 
 const viewData = [
-  { path: '/first-view', name: 'First view', content: 'Tasks List', title: 'Task Manager' },
-  { path: '/second-view', name: 'Second view', content: 'Second view content', title: 'Second view' },
-  { path: '/third-view', name: 'Third view', content: 'Third view content', title: 'Third view' },
+  { path: '/tasks', name: 'Tasks', content: 'Tasks List' },
+  { path: '/task-activity-summary', name: 'Task activity summary', content: 'Task activity summary content', title: 'Task Activity Summary' },
+  { path: '/tag-activity-summary', name: 'Tag activity summary', content: 'Tag activity summary content', title: 'Tag Activity Summary' },
+  { path: '/info', name: 'Info', content: '', title: 'Information' },
 ];
 
 const NavigationMenu = () => {
-  const location = useLocation(); 
+  const location = useLocation();
   const activePath = location.pathname;
 
   return (
@@ -30,7 +32,7 @@ const NavigationMenu = () => {
   );
 };
 
-const FirstView = ({ title, content }) => {
+const TasksView = ({ title, content }) => {
   const [tasks, setTasks] = useState([]);
   const [tags, setTags] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,7 +49,7 @@ const FirstView = ({ title, content }) => {
 
         const tasksResponse = await fetch(`${API_URL}/tasks`);
         const tasksData = await tasksResponse.json();
-        
+
         const combinedTasks = tasksData.map(task => {
           const tagIds = task.tags.split(',').filter(id => id.trim() !== '');
           const tagNames = tagIds.map(id => tagsMap.get(id)).filter(name => name);
@@ -83,13 +85,13 @@ const FirstView = ({ title, content }) => {
     <div className="view-content-box">
       <h2 className="view-title">{title}</h2>
       <p className="view-text">{content}</p>
-      
+
       <div className="tasks-list">
         {tasks.map(task => (
-          <TaskCard 
-            key={task.id} 
-            name={task.name} 
-            tagNames={task.tagNames} 
+          <TaskCard
+            key={task.id}
+            name={task.name}
+            tagNames={task.tagNames}
           />
         ))}
       </div>
@@ -104,7 +106,7 @@ const RenderViewContent = ({ title, content }) => (
   </div>
 );
 
-const App = () => { 
+const App = () => {
   return (
     <BrowserRouter>
       <div className="app-wrapper">
@@ -112,22 +114,30 @@ const App = () => {
           <h1 className="app-title">
             TaskTrack
           </h1>
-          
+
           <NavigationMenu />
 
           <div className="content-area">
             <Routes>
-              <Route path="/" element={<Navigate to="/first-view" replace />} />
-              {viewData.map((item) => (
-                 <Route 
+              <Route path="/" element={<Navigate to="/tasks" replace />} />
+              {viewData.map((item) => {
+                let element;
+                if (item.path === '/tasks') {
+                  element = <TasksView title={item.title} content={item.content} />;
+                } else if (item.path === '/info') {
+                  element = <InfoView />;
+                } else {
+                  element = <RenderViewContent title={item.title} content={item.content} />;
+                }
+
+                return (
+                  <Route
                     key={item.path}
-                    path={item.path} 
-                    element={item.path === '/first-view' 
-                       ? <FirstView title={item.title} content={item.content} />
-                       : <RenderViewContent title={item.title} content={item.content} />
-                     } 
+                    path={item.path}
+                    element={element}
                   />
-              ))}
+                );
+              })}
             </Routes>
           </div>
         </div>
