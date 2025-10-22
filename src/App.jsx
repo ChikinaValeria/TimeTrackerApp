@@ -110,7 +110,7 @@ const App = () => {
       <div className="app-wrapper">
         <div className="main-container">
           <h1 className="app-title">
-            My simple application with routing
+            TaskTrack
           </h1>
           
           <NavigationMenu />

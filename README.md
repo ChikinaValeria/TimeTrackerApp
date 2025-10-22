@@ -1,4 +1,4 @@
-# ⏱️ Time Tracker Frontend
+# ⏱️ Time Tracker Application
 
 This project is the **frontend** part of an application designed for **recording time spent on different activities** and **analyzing time usage**.
 
