@@ -4,12 +4,45 @@
 --color-bg-white: #ffffff;
 --color-shadow: rgba(0, 0, 0, 0.1);
 --color-border: #e5e7eb;
+--color-danger: #ef4444; /* Added red color for delete button */
+--color-danger-hover: #dc2626; /* Darker red for hover */
+--color-confirm-bg: #4ade80; /* Green for 'Yes' button */
+--color-confirm-hover: #22c55e; /* Darker green for 'Yes' button hover */
+
 font-family: 'Inter', sans-serif;
+}
 
 body {
 margin: 0;
 -webkit-font-smoothing: antialiased;
 -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dark theme support (simple example using prefers-color-scheme) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-text: #f9fafb;
+    --color-bg-light: #1f2937;
+    --color-bg-white: #374151;
+    --color-shadow: rgba(255, 255, 255, 0.1);
+    --color-border: #4b5563;
+  }
+
+  .main-container {
+    background-color: var(--color-bg-white);
+  }
+
+  .view-content-box {
+    background-color: var(--color-bg-light);
+  }
+
+  .task-card, .modal-content {
+    background-color: var(--color-bg-white);
+  }
+
+  .yes-button {
+    color: var(--color-text); /* Ensure Yes button text is visible in dark mode */
+  }
 }
 
 .app-wrapper {
@@ -64,10 +97,11 @@ border-bottom: 4px solid transparent;
 background-color: var(--color-border);
 }
 
+/* Assuming a primary color variable is defined elsewhere or using a default color */
 .nav-link.active {
 background-color: var(--color-bg-white);
-color: var(--color-primary);
-border-bottom-color: var(--color-primary);
+color: var(--color-text); /* Using text color as a fallback for primary */
+border-bottom-color: #3b82f6; /* Example color */
 box-shadow: 0 -2px 5px -2px var(--color-shadow);
 }
 
@@ -83,7 +117,7 @@ color: var(--color-text);
 font-size: 1.5rem;
 font-weight: 600;
 margin-bottom: 16px;
-color: var(--color-primary);
+color: var(--color-text); /* Use text color as primary fallback */
 }
 
 .view-text {
@@ -93,16 +127,29 @@ font-size: 1.125rem;
 .tasks-list {
   display: flex;
   flex-direction: column;
-  gap: 16px; 
+  gap: 16px;
   margin-top: 24px;
 }
 
+/* Styles for the visual Task Card element */
 .task-card {
   background-color: var(--color-bg-white);
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 4px 6px -1px var(--color-shadow);
-  border-left: 5px solid hsl(60, 91%, 60%);
+  box-shadow: 0 4px 6px -1px var(--color-shadow); /* Shadow is back */
+  border-left: 5px solid hsl(60, 91%, 60%); /* Border is back */
+  color: var(--color-text);
+
+  /* NEW/UPDATED: Flexbox for content arrangement (content left, button right) */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* New container for name and tags to group them together */
+.task-content {
+  flex-grow: 1; /* Allows content to take up most space */
+  padding-right: 15px; /* Add some space before the button */
 }
 
 .task-name {
@@ -111,27 +158,115 @@ font-size: 1.125rem;
   margin-top: 0;
   margin-bottom: 12px;
   color: var(--color-text);
-  word-wrap: break-word; 
+  word-wrap: break-word;
 }
 
 .task-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px; 
+  gap: 8px;
 }
 
 .task-tag {
   display: inline-block;
-  background-color: hwb(60 55% 6%); 
+  background-color: hwb(60 55% 6%);
   color: hsl(31, 91%, 37%);
   padding: 4px 10px;
-  border-radius: 9999px; 
+  border-radius: 9999px;
   font-size: 0.875rem;
   font-weight: 500;
   text-transform: capitalize;
 }
 
 .task-tag.no-tag {
-    background-color: var(--color-border);
-    color: var(--color-text);
+  background-color: var(--color-border);
+  color: var(--color-text);
+}
+
+/* Styles for Delete button */
+.delete-button {
+  background-color: var(--color-danger); /* Red color */
+  color: var(--color-bg-white);
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px; /* Rounded corners */
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
+  flex-shrink: 0; /* Prevents button from shrinking when space is tight */
+}
+
+.delete-button:hover {
+  background-color: var(--color-danger-hover); /* Darker red on hover */
+}
+
+/* Styles for Modal */
+.modal-backdrop {
+  position: fixed; /* Fixed position over everything */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it's on top */
+}
+
+.modal-content {
+  background-color: var(--color-bg-white);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+  color: var(--color-text);
+  text-align: center;
+}
+
+.modal-title {
+  margin-top: 0;
+  font-size: 1.5rem;
+  color: var(--color-danger);
+}
+
+.modal-message {
+  font-size: 1.125rem;
+  margin-bottom: 24px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.modal-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.yes-button {
+  background-color: var(--color-confirm-bg); /* Green for 'Yes' */
+  color: var(--color-text);
+}
+
+.yes-button:hover {
+  background-color: var(--color-confirm-hover);
+}
+
+.no-button {
+  background-color: var(--color-border); /* Light color for 'No' */
+  color: var(--color-text);
+}
+
+.no-button:hover {
+  background-color: var(--color-shadow);
 }
