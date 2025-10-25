@@ -1,109 +1,130 @@
-// CreateTask.jsx
-// Function component for the modal form used to create a new task.
+// CreateTask.jsx (Modified: Integration of TagAssignment and fixed handleSubmit logic)
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import TagAssignment from './TagAssignment.jsx'; // Import the new component
 
-// The CreateTask component acts as a modal, displaying the form fields.
-const CreateTask = ({ isOpen, onCreate, onCancel }) => {
-  const MAX_LENGTH = 40;
+// CreateTask component as a modal for adding a new task.
+const CreateTask = ({ isOpen, onCreate, onCancel, availableTags, postNewTag }) => {
 
-  // State Hooks for form fields, ensuring they are simple strings.
-  const [taskName, setTaskName] = useState('');
-  const [additionalData, setAdditionalData] = useState('');
+    const MAX_TASK_LENGTH = 40;
 
-  // Effect Hook to clear form state when modal closes (when isOpen changes to false).
-  useEffect(() => {
-    if (!isOpen) {
-      setTaskName('');
-      setAdditionalData('');
-    }
-  }, [isOpen]);
+    // State Hooks for task fields
+    const [taskName, setTaskName] = useState('');
+    const [taskDescription, setTaskDescription] = useState('');
+    const [taskAdditionalData, setTaskAdditionalData] = useState('');
 
-  if (!isOpen) return null;
+    // State Hook for the tag IDs string
+    const [assignedTagIds, setAssignedTagIds] = useState('');
 
-  // Handler for Task Name input with length check
-  const handleNameChange = (e) => {
-    const value = e.target.value;
-    if (value.length <= MAX_LENGTH) {
-      setTaskName(value);
-    }
-  };
 
-  // Handler for Additional Data input with length check
-  const handleAdditionalDataChange = (e) => {
-    const value = e.target.value;
-    if (value.length <= MAX_LENGTH) {
-      setAdditionalData(value);
-    }
-  };
+    if (!isOpen) return null;
 
-  // Handler for Save button (triggers POST request in parent TasksView)
-  const handleCreate = (e) => {
-    e.preventDefault(); // Prevent default form submission
-
-    // Simple validation
-    if (!taskName.trim()) {
-        alert("Task Name cannot be empty.");
-        return;
-    }
-
-    // Task object for POST request, using simple data structures.
-    // Default values are included as required by the backend API.
-    const newTask = {
-      name: taskName,
-      tags: "", // Default to empty string
-      description: "Default description", // Default description
-      additional_data: additionalData,
-      is_active: true, // Default to active
+    // Handler to reset the form fields
+    const resetForm = () => {
+        setTaskName('');
+        setTaskDescription('');
+        setTaskAdditionalData('');
+        setAssignedTagIds(''); // Reset assigned tags
     };
 
-    onCreate(newTask);
-    // Parent component will handle closing the modal and resetting state.
-  };
+    // Handler for task name change
+    const handleNameChange = (e) => {
+        const value = e.target.value;
+        if (value.length <= MAX_TASK_LENGTH) {
+            setTaskName(value);
+        }
+    };
 
-  return (
-    <div className="modal-backdrop">
-      <div className="modal-content edit-modal-content">
-        <h3 className="modal-title">Create Task</h3>
-        <form className="edit-form" onSubmit={handleCreate}>
+    // Handler for additional data change
+    const handleAdditionalDataChange = (e) => {
+        const value = e.target.value;
+        if (value.length <= MAX_TASK_LENGTH) {
+            setTaskAdditionalData(value);
+        }
+    };
 
-          {/* Task Name Field */}
-          <div className="form-group">
-            <label htmlFor="newTaskName">Task Name:</label>
-            <input
-              id="newTaskName"
-              type="text"
-              value={taskName}
-              onChange={handleNameChange}
-              className="form-input"
-              maxLength={MAX_LENGTH} // HTML-based max length
-              required
-            />
-            <p className="char-limit-message">Max length: {MAX_LENGTH} characters.</p>
-          </div>
+    // Handler for form submission
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-          {/* Additional Data Field */}
-          <div className="form-group">
-            <label htmlFor="newAdditionalData">Additional Data:</label>
-            <input
-              id="newAdditionalData"
-              type="text"
-              value={additionalData}
-              onChange={handleAdditionalDataChange}
-              className="form-input"
-              maxLength={MAX_LENGTH} // HTML-based max length
-            />
-            <p className="char-limit-message">Max length: {MAX_LENGTH} characters.</p>
-          </div>
+        if (!taskName.trim()) {
+            alert("Task Name cannot be empty.");
+            return;
+        }
 
-          <div className="modal-actions">
-            <button type="submit" className="modal-button save-button">Save</button>
-            <button type="button" className="modal-button cancel-button" onClick={onCancel}>Cancel</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+        const newTask = {
+            name: taskName,
+            description: taskDescription,
+            additional_data: taskAdditionalData,
+            tags: assignedTagIds, // Use the updated tags string
+            is_active: true, // Defaulting to active
+        };
+
+        // Call parent function (TasksView's handleConfirmCreate).
+        // The parent handles the POST request and closing the modal/resetting.
+        await onCreate(newTask);
+        resetForm(); // Reset local state after successful creation
+    };
+
+
+    return (
+        <div className="modal-backdrop">
+            <div className="modal-content edit-modal-content">
+                <h3 className="modal-title">Create New Task</h3>
+                <form className="edit-form" onSubmit={handleSubmit}>
+
+                    {/* Task Name Field */}
+                    <div className="form-group">
+                        <label htmlFor="newTaskName">Task Name:</label>
+                        <input
+                            id="newTaskName"
+                            type="text"
+                            value={taskName}
+                            onChange={handleNameChange}
+                            className="form-input"
+                            maxLength={MAX_TASK_LENGTH}
+                            required
+                        />
+                        <p className="char-limit-message">Max length: {MAX_TASK_LENGTH} characters.</p>
+                    </div>
+
+                    {/* Additional Data Field (using original logic for simplicity) */}
+                    <div className="form-group">
+                        <label htmlFor="newTaskAdditionalData">Additional Data (Max {MAX_TASK_LENGTH} Chars):</label>
+                        <input
+                            id="newTaskAdditionalData"
+                            type="text"
+                            value={taskAdditionalData}
+                            onChange={handleAdditionalDataChange}
+                            className="form-input"
+                            maxLength={MAX_TASK_LENGTH}
+                        />
+                        <p className="char-limit-message">Max length: {MAX_TASK_LENGTH} characters.</p>
+                    </div>
+
+                    {/* Tag Assignment Component */}
+                    <TagAssignment
+                        initialTagIds={''} // New task starts with no tags
+                        availableTags={availableTags}
+                        onTagsChange={setAssignedTagIds} // Update the local state for tags
+                        onNewTagCreate={postNewTag}
+                    />
+
+                    <div className="modal-actions">
+                        <button type="submit" className="modal-button save-button">Create Task</button>
+                        <button
+                            type="button"
+                            className="modal-button cancel-button"
+                            // Call parent onCancel and reset local form state
+                            onClick={() => { onCancel(); resetForm(); }}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
 };
 
 export default CreateTask;
