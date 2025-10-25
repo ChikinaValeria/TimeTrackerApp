@@ -1,70 +1,100 @@
-// TaskCard.jsx (updated to display additional_data)
+// TaskCard.jsx
+// Component that displays a single task element and includes Drag and Drop handlers.
 
-// TaskCard component, displays a single task item.
-// Note: additional_data is added to props and used in rendering.
-const TaskCard = ({ id, name, tagNames, description, tags, additional_data, is_active, onDeleteRequest, onEditRequest }) => {
+import React, { useState } from 'react'; // NEW: Import useState
 
-  // Handler for delete button click
-  const handleDeleteClick = (e) => {
-    e.stopPropagation(); // Stop click event from propagating to any parent click handlers
-    // Calls the function from parent component to initiate delete confirmation
-    onDeleteRequest(id, name);
-  };
+// TaskCard component displays a single task element.
+const TaskCard = ({
+    id,
+    name,
+    tagNames,
+    description,
+    tags,
+    additional_data,
+    is_active,
+    onDeleteRequest,
+    onEditRequest,
+    onDragStart,
+    onDragEnter,
+    onDrop,
+    onDragOver,
+}) => {
+    // NEW: State to track if this specific card is the one being dragged
+    const [isDragging, setIsDragging] = useState(false);
 
-  // Handler for edit button click
-  const handleEditClick = (e) => {
-    e.stopPropagation(); // Stop click event from propagating
-    // Prepare the full task object to pass to the edit modal
-    const taskData = { id, name, description, tags, additional_data, is_active };
-    onEditRequest(taskData);
-  };
+    // Handler for starting drag. Sets the task ID in dataTransfer.
+    const handleDragStart = (e) => {
+        setIsDragging(true); // Set source element as dragging
+        e.dataTransfer.setData("taskId", id.toString());
+        onDragStart(id);
+    };
 
-  return (
-    // The task-card now contains content and action buttons
-    <div className="task-card">
-      {/* Task Content: name, additional_data, and tags */}
-      <div className="task-content">
-        <h3 className="task-name">{name}</h3>
+    // Handler for dropping. Prevents default and calls parent handler.
+    const handleDrop = (e) => {
+        e.preventDefault();
+        // Drop logic remains in parent, but we ensure dragging state is reset
+        setIsDragging(false);
+        const draggedTaskId = e.dataTransfer.getData("taskId");
+        onDrop(Number(draggedTaskId), id);
+    };
 
-        {/* NEW: Additional Data display */}
-        {additional_data && (
-          <p className="additional-data">{additional_data}</p>
-        )}
+    // Handler for drag end (cleanup)
+    const handleDragEnd = (e) => {
+        // Reset the dragging state when drag operation finishes (success or cancel)
+        setIsDragging(false);
+    };
 
-        <div className="task-tags">
-          {tagNames.length > 0 ?
-            tagNames.map((tag, index) => (
-              <span key={index} className="task-tag">
-                {tag}
-              </span>
-            )) :
-            <span className="task-tag no-tag">No Tag</span>
-          }
+
+    // Handlers for Drag Enter/Over remain unchanged in logic
+    const handleDragEnter = (e) => {
+        e.stopPropagation();
+        onDragEnter(id);
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        onDragOver(id);
+    };
+
+
+    return (
+        <div
+            // Apply the new class if currently dragging
+            className={`task-card ${isDragging ? 'is-dragging-source' : ''}`}
+            // Drag and Drop Attributes and Handlers
+            draggable="true"
+            onDragStart={handleDragStart}
+            onDragEnter={handleDragEnter}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd} // Use the new handler
+        >
+            {/* ... (Task Card content remains unchanged) ... */}
+            <div className="task-content">
+                <h3 className="task-name">{name} (ID: {id})</h3>
+                <p className="additional-data">{additional_data}</p>
+                <div className="task-tags">
+                    {tagNames.map((tagName, index) => (
+                        <span key={index} className="task-tag">{tagName}</span>
+                    ))}
+                </div>
+            </div>
+            <div className="task-actions">
+                <button
+                    className="edit-button"
+                    onClick={() => onEditRequest({ id, name, description, tags, additional_data, is_active })}
+                >
+                    Edit
+                </button>
+                <button
+                    className="delete-button"
+                    onClick={() => onDeleteRequest(id, name)}
+                >
+                    Delete
+                </button>
+            </div>
         </div>
-      </div>
-
-      {/* Action Buttons Container */}
-      <div className="task-actions">
-        {/* Edit button placed inside the task-card */}
-        <button
-          className="edit-button" // Orange button
-          onClick={handleEditClick}
-          aria-label={`Edit task: ${name}`}
-        >
-          Edit
-        </button>
-
-        {/* Delete button placed inside the task-card */}
-        <button
-          className="delete-button"
-          onClick={handleDeleteClick}
-          aria-label={`Delete task: ${name}`}
-        >
-          Delete task
-        </button>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default TaskCard;

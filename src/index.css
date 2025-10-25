@@ -208,7 +208,7 @@ margin-top: 24px;
 }
 
 /* ------------------------------------------- */
-/* TaskCard Стили */
+/* TaskCard Стили (MODIFIED for D&D VISUAL) */
 /* ------------------------------------------- */
 
 /* Стили для визуального элемента Task Card */
@@ -219,11 +219,28 @@ border-radius: 8px;
 box-shadow: 0 4px 6px -1px var(--color-shadow); /* Тень */
 border-left: 5px solid hsl(60, 91%, 60%); /* Цветная левая граница */
 color: var(--color-text);
+transition: opacity 0.2s; /* Added transition for smoother visual change */
 
 /* Flexbox для расположения содержимого (контент слева, кнопки справа) */
 display: flex;
 justify-content: space-between;
 align-items: center;
+
+/* D&D: Set cursor to indicate draggable */
+cursor: grab;
+}
+
+/* D&D: Change cursor when dragging starts */
+.task-card:active {
+    cursor: grabbing;
+}
+
+/* D&D: Styles for the element that is the source of the drag operation */
+.task-card.is-dragging-source {
+    /* Set opacity to make the original box visible but faint */
+    opacity: 0.4;
+    border: 2px dashed #9ca3af; /* Add a dashed border to mark it */
+    border-left: 5px solid #9ca3af; /* Change border color too */
 }
 
 /* Контейнер для имени и тегов, чтобы сгруппировать их */
@@ -310,7 +327,7 @@ background-color: var(--color-danger-hover);
 }
 
 /* ------------------------------------------- */
-/* TagCard Стили (MODIFIED) */
+/* TagCard Стили */
 /* ------------------------------------------- */
 
 .tags-list {
@@ -532,7 +549,7 @@ background-color: var(--color-shadow);
 
 
 /* ------------------------------------------- */
-/* Стили для TagAssignment в модальных окнах (NEW) */
+/* Стили для TagAssignment в модальных окнах */
 /* ------------------------------------------- */
 
 .tag-assignment-container {
@@ -674,7 +691,7 @@ background-color: var(--color-shadow);
 }
 
 /* ------------------------------------------- */
-/* Стили для TagFilter (NEW) */
+/* Стили для TagFilter */
 /* ------------------------------------------- */
 
 .tag-filter-container {

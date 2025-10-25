@@ -1,13 +1,13 @@
-// App.jsx (MODIFIED: TasksView now includes TagFilter and filtering logic)
+// App.jsx (MODIFIED: TasksView now includes D&D state and CLIENT-SIDE reordering)
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import TaskCard from './TaskCard.jsx';
 import InfoView from './InfoView.jsx';
 import CreateTask from './CreateTask.jsx';
 import TagsView from './TagsView.jsx';
 import EditTask from './EditTask.jsx';
-import TagFilter from './TagFilter.jsx'; // NEW: Import the TagFilter component
+import TagFilter from './TagFilter.jsx';
 
 // API base URL
 const API_URL = 'http://127.0.0.1:3010';
@@ -60,40 +60,97 @@ const NavigationMenu = () => {
   );
 };
 
-// TasksView component updated for delete, edit, create, and FILTERING functionality
+// TasksView component updated for D&D functionality
 const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag }) => {
 
   const [isLoading, setIsLoading] = useState(true);
 
-  // State for delete modal
+  // State for delete modal, edit modal, create modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
-
-  // State for edit modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState(null);
-
-  // State for create task modal
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  // NEW: State Hook for selected tag IDs for filtering (array of strings)
+  // State Hook for selected tag IDs for filtering (array of strings)
   const [selectedTagIds, setSelectedTagIds] = useState([]);
 
+  // Ref to store the ID of the task currently being dragged
+  const dragItem = useRef(null);
+  // Ref to store the ID of the task that is the drag target
+  const dragOverItem = useRef(null);
 
-  // Effect Hook to sync loading state after initial fetch in App.jsx
+  // State for task list order (derived from props.tasks, but used for D&D manipulation)
+  // This state holds the currently visible/reordered list.
+  const [tasksOrder, setTasksOrder] = useState(tasks);
+
+  // Effect Hook to update tasksOrder whenever the centralized tasks prop changes (e.g., after initial fetch, create, or edit)
   useEffect(() => {
-    // We rely on tasks and availableTags being populated by the parent App component
+    // Only update if the content of tasks has actually changed
+    if (JSON.stringify(tasksOrder.map(t => t.id)) !== JSON.stringify(tasks.map(t => t.id))
+        || tasksOrder.length !== tasks.length) {
+        // When the master 'tasks' list changes (due to CRUD operation or initial fetch),
+        // we reset the visual order to the new master list.
+        setTasksOrder(tasks);
+    }
+
+    // Also update loading state (existing logic)
     if (tasks.length > 0 || availableTags.length > 0) {
       setIsLoading(false);
     }
-    // Simple way to ensure it becomes false even if lists are empty initially
     if (!tasks && !availableTags) {
         setIsLoading(false);
     }
   }, [tasks, availableTags]);
 
 
-  // --- NEW: Filter Logic and Handler ---
+  // --- D&D Handlers (CLIENT-SIDE ONLY) ---
+
+  // 1. Called when dragging starts on TaskCard
+  const handleDragStart = useCallback((taskId) => {
+    dragItem.current = taskId;
+  }, []);
+
+  // 2. Called when a dragged item enters the drop target TaskCard
+  const handleDragEnter = useCallback((taskId) => {
+    dragOverItem.current = taskId;
+    // Optional: Add visual feedback logic here if needed
+  }, []);
+
+  // 3. Called when dragging over. Crucial for drop to work (preventDefault is in TaskCard)
+  const handleDragOver = useCallback((taskId) => {
+    // No visual changes needed here for simple implementation
+  }, []);
+
+  // 4. Called when the dragged item is dropped onto the drop target TaskCard
+  const handleDrop = useCallback((draggedId, targetId) => {
+    // 1. Calculate new local order
+    const list = [...tasksOrder];
+    const draggedItemIndex = list.findIndex(task => task.id === draggedId);
+    const targetItemIndex = list.findIndex(task => task.id === targetId);
+
+    // Safety check
+    if (draggedItemIndex === -1 || targetItemIndex === -1) return;
+
+    // Remove the dragged item from its original position
+    const [reorderedItem] = list.splice(draggedItemIndex, 1);
+    // Insert the item into the new position
+    list.splice(targetItemIndex, 0, reorderedItem);
+
+    // 2. Update local state immediately for visual feedback
+    setTasksOrder(list);
+
+    // 3. IMPORTANT: Clear refs
+    dragItem.current = null;
+    dragOverItem.current = null;
+
+    // NOTE: Server saving (saveNewOrder) is intentionally omitted here
+    // because the server lacks the necessary endpoint/data structure.
+
+  }, [tasksOrder]); // Dependency on tasksOrder for the list manipulation
+
+
+  // --- Filter Logic and Handler ---
 
   // Function to toggle a tag ID in the selectedTagIds state
   const handleFilterChange = (tagId) => {
@@ -116,17 +173,14 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
 
 
   // Memoized function to perform the filtering based on the 'AND' logic
+  // Filters the tasksOrder state, which is the currently displayed list
   const filteredTasks = React.useMemo(() => {
     if (selectedTagIds.length === 0) {
-      // If no tags are selected, show all tasks
-      return tasks;
+      return tasksOrder; // Use tasksOrder for rendering (D&D state)
     }
 
-    // Filter tasks based on the 'AND' logic:
-    // A task is included only if it contains ALL selected tag IDs.
-    return tasks.filter(task => {
+    return tasksOrder.filter(task => {
       // Get the tag IDs of the current task as an array of strings
-      // Ensure we handle null/undefined tags field gracefully
       const taskTagIds = task.tags ? task.tags.split(',').map(id => id.trim()).filter(id => id !== '') : [];
 
       // Check if EVERY selected tag ID is present in the task's tag IDs
@@ -134,9 +188,7 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
         taskTagIds.includes(selectedId)
       );
     });
-  }, [tasks, selectedTagIds]); // Re-calculate only when tasks or filter changes
-
-  // --- END NEW Filter Logic and Handler ---
+  }, [tasksOrder, selectedTagIds]); // Dependency on tasksOrder for D&D consistency
 
 
   // --- CREATE Handlers (Unchanged) ---
@@ -157,7 +209,7 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
       });
 
       if (postResponse.ok) {
-        await fetchData(); // Update UI
+        await fetchData(); // Update UI (resets client-side D&D order)
       } else {
         console.error(`Failed to create task: ${postResponse.statusText}`);
         alert(`Creation failed. Server responded with: ${postResponse.status}`);
@@ -191,7 +243,7 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
       });
 
       if (deleteResponse.ok) {
-        await fetchData(); // Update UI by re-fetching all data
+        await fetchData(); // Update UI (resets client-side D&D order)
       } else {
         console.error(`Failed to delete task ${taskToDelete.id}: ${deleteResponse.statusText}`);
         alert(`Deletion failed. Server responded with: ${deleteResponse.status}`);
@@ -208,22 +260,19 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
 
 
   // --- EDIT Handlers (Unchanged logic) ---
-
-  // Handler to open the edit modal
   const handleEditRequest = (task) => {
     setTaskToEdit(task);
     setIsEditModalOpen(true);
   };
 
-  // Handler for Cancel button in edit modal
   const handleCancelEdit = () => {
     setIsEditModalOpen(false);
-    setTaskToEdit(null); // Clear the task to edit
+    setTaskToEdit(null);
   };
 
-  // Handler for Save button in edit modal (PUT request)
   const handleSaveEdit = async (updatedTask) => {
     try {
+      // NOTE: This PUT uses the existing endpoint structure: PUT http://127.0.0.1:3010/tasks/1
       const putResponse = await fetch(`${API_URL}/tasks/${updatedTask.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -231,7 +280,7 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
       });
 
       if (putResponse.ok) {
-        await fetchData(); // Re-fetch the updated task list to ensure UI is updated
+        await fetchData(); // Re-fetch the updated task list (resets client-side D&D order)
       } else {
         console.error(`Failed to update task ${updatedTask.id}: ${putResponse.statusText}`);
         alert(`Update failed. Server responded with: ${putResponse.status}`);
@@ -241,7 +290,7 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
       alert("An error occurred while saving the task.");
     } finally {
       setIsEditModalOpen(false);
-      setTaskToEdit(null); // Close modal and clear task state
+      setTaskToEdit(null);
     }
   };
   // --- End EDIT Handlers ---
@@ -265,13 +314,12 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
           </button>
         </div>
 
-        {/* NEW: Tag Filter Component */}
+        {/* Tag Filter Component */}
         <TagFilter
             availableTags={availableTags}
             selectedTagIds={selectedTagIds}
             onFilterChange={handleFilterChange}
         />
-        {/* Button to clear all filters */}
         <button
             className={`clear-filter-button ${selectedTagIds.length === 0 ? 'inactive' : ''}`}
             onClick={handleClearFilter}
@@ -282,8 +330,8 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
 
 
         <div className="tasks-list">
-          {/* Display the filtered list of tasks */}
           {filteredTasks.length > 0 ? (
+            // Map over the filtered list (which uses tasksOrder for D&D)
             filteredTasks.map(task => (
                 <TaskCard
                     key={task.id}
@@ -296,6 +344,11 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
                     is_active={task.is_active}
                     onDeleteRequest={handleDeleteRequest}
                     onEditRequest={handleEditRequest}
+                    // Pass D&D handlers to TaskCard
+                    onDragStart={handleDragStart}
+                    onDragEnter={handleDragEnter}
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
                 />
             ))
           ) : (
@@ -304,7 +357,7 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete, Create, Edit Modals remain here */}
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
         title="Confirm Deletion"
@@ -312,24 +365,20 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />
-
-      {/* Create Task Modal - Passing required data and functions */}
       <CreateTask
         isOpen={isCreateModalOpen}
         onCreate={handleConfirmCreate}
         onCancel={handleCancelCreate}
-        availableTags={availableTags} // Pass all tags
-        postNewTag={postNewTag}     // Pass POST function for new tags
+        availableTags={availableTags}
+        postNewTag={postNewTag}
       />
-
-      {/* Edit Task Modal - Using separate component */}
       <EditTask
         isOpen={isEditModalOpen}
         taskData={taskToEdit}
         onSave={handleSaveEdit}
         onCancel={handleCancelEdit}
-        availableTags={availableTags} // Pass all tags
-        postNewTag={postNewTag}     // Pass POST function for new tags
+        availableTags={availableTags}
+        postNewTag={postNewTag}
       />
     </>
   );
@@ -345,7 +394,6 @@ const App = () => {
 
 
     // --- Core Data Fetching Function ---
-    // Fetches both tasks and tags, and combines task data with tag names for display
     const fetchData = useCallback(async () => {
         setIsLoading(true);
         setError(null);
@@ -386,8 +434,7 @@ const App = () => {
         fetchData();
     }, [fetchData]);
 
-    // --- Core POST New Tag Function (Modified to prevent modal closure) ---
-    // Function passed to CreateTask/EditModal to handle new tag creation
+    // --- Core POST New Tag Function ---
     const postNewTag = async (name, additional_data) => {
         const newTag = { name, additional_data };
 
@@ -399,13 +446,8 @@ const App = () => {
             });
 
             if (postResponse.ok) {
-                // Get the newly created tag object
                 const createdTag = await postResponse.json();
-
-                // FIX: Update ONLY the availableTags state.
                 setAvailableTags(prevTags => [...prevTags, createdTag]);
-
-                // Return the newly created tag object
                 return createdTag;
             } else {
                 console.error(`Failed to create tag: ${postResponse.statusText}`);
@@ -420,8 +462,6 @@ const App = () => {
     };
 
 
-    // RenderViewContent component remains unchanged
-
     const RenderViewContent = ({ title, content }) => (
         <div className="view-content-box">
             <h2 className="view-title">{title}</h2>
@@ -429,7 +469,6 @@ const App = () => {
         </div>
     );
 
-    // Render loading/error state for the entire app
     if (isLoading) {
         return (
             <div className="app-wrapper">
@@ -468,7 +507,6 @@ const App = () => {
                             {viewData.map((item) => {
                                 let element;
                                 if (item.path === '/tasks') {
-                                    // Pass central data and functions to TasksView
                                     element = <TasksView
                                         title={item.title}
                                         tasks={tasks}
@@ -477,7 +515,6 @@ const App = () => {
                                         postNewTag={postNewTag}
                                     />;
                                 } else if (item.path === '/tags') {
-                                    // TagsView uses its own logic to fetch data
                                     element = <TagsView
                                         title={item.title}
                                         tasks={tasks}
