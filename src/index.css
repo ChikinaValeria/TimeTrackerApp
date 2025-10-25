@@ -60,6 +60,33 @@ color: var(--color-text);
 .add-task-button {
 color: var(--color-bg-white);
 }
+
+/* Dark theme adjustments for filters */
+.filter-tag {
+    background-color: var(--color-bg-white);
+    border-color: var(--color-border);
+    color: var(--color-text);
+}
+
+.filter-tag:hover {
+    background-color: #4b5563;
+    border-color: #6b7280;
+}
+
+.filter-tag.active {
+    background-color: #3b82f6;
+    color: var(--color-bg-white);
+    border-color: #3b82f6;
+}
+
+.clear-filter-button {
+    background-color: #4b5563;
+    color: var(--color-text);
+}
+
+.clear-filter-button:hover:not(:disabled) {
+    background-color: #6b7280;
+}
 }
 
 .app-wrapper {
@@ -644,4 +671,83 @@ background-color: var(--color-shadow);
 /* Ensure form groups within new-tag-fields don't have excessive padding/margin */
 .new-tag-fields .form-group {
     margin-bottom: 0;
+}
+
+/* ------------------------------------------- */
+/* Стили для TagFilter (NEW) */
+/* ------------------------------------------- */
+
+.tag-filter-container {
+    padding: 15px 0 10px;
+    border-top: 1px solid var(--color-border);
+    margin-bottom: 10px;
+}
+
+.filter-label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 10px;
+    color: var(--color-text);
+}
+
+.tags-list-for-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.filter-tag {
+    /* Base style for clickable tag buttons */
+    border: 1px solid #9ca3af; /* Light gray border */
+    background-color: var(--color-bg-white);
+    color: var(--color-text);
+    padding: 6px 12px;
+    border-radius: 9999px; /* Pill shape */
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+/* Hover effect */
+.filter-tag:hover {
+    background-color: #f3f4f6;
+    border-color: #6b7280;
+}
+
+/* Active (selected) state */
+.filter-tag.active {
+    background-color: #3b82f6; /* Blue or primary color */
+    color: var(--color-bg-white);
+    border-color: #3b82f6;
+    font-weight: 600;
+}
+
+/* Specific styling for the clear filter button (outside the tag list) */
+.clear-filter-button {
+    background-color: #d1d5db; /* Gray background */
+    color: var(--color-text);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+    transition: background-color 0.2s, opacity 0.2s;
+}
+
+.clear-filter-button:hover:not(:disabled) {
+    background-color: #9ca3af;
+}
+
+/* Inactive (disabled) state when no filters are applied */
+.clear-filter-button.inactive, .clear-filter-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.no-tasks-found {
+    color: #6b7280;
+    font-style: italic;
+    margin-top: 20px;
 }

@@ -1,4 +1,4 @@
-// App.jsx (MODIFIED: postNewTag updated, EditModal component removed, EditTask imported)
+// App.jsx (MODIFIED: TasksView now includes TagFilter and filtering logic)
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
@@ -6,7 +6,8 @@ import TaskCard from './TaskCard.jsx';
 import InfoView from './InfoView.jsx';
 import CreateTask from './CreateTask.jsx';
 import TagsView from './TagsView.jsx';
-import EditTask from './EditTask.jsx'; // NEW: Import the separate EditTask modal
+import EditTask from './EditTask.jsx';
+import TagFilter from './TagFilter.jsx'; // NEW: Import the TagFilter component
 
 // API base URL
 const API_URL = 'http://127.0.0.1:3010';
@@ -59,10 +60,9 @@ const NavigationMenu = () => {
   );
 };
 
-// TasksView component updated for delete, edit and CREATE functionality
-// NOTE: TasksView now receives tasks, availableTags and fetchData from App.jsx
+// TasksView component updated for delete, edit, create, and FILTERING functionality
 const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag }) => {
-  // Tasks and Tags are now received via props, reducing state/loading complexity here
+
   const [isLoading, setIsLoading] = useState(true);
 
   // State for delete modal
@@ -76,6 +76,9 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
   // State for create task modal
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  // NEW: State Hook for selected tag IDs for filtering (array of strings)
+  const [selectedTagIds, setSelectedTagIds] = useState([]);
+
 
   // Effect Hook to sync loading state after initial fetch in App.jsx
   useEffect(() => {
@@ -88,6 +91,52 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
         setIsLoading(false);
     }
   }, [tasks, availableTags]);
+
+
+  // --- NEW: Filter Logic and Handler ---
+
+  // Function to toggle a tag ID in the selectedTagIds state
+  const handleFilterChange = (tagId) => {
+    setSelectedTagIds(prevIds => {
+      const idString = String(tagId);
+      if (prevIds.includes(idString)) {
+        // Remove tag ID (unselect)
+        return prevIds.filter(id => id !== idString);
+      } else {
+        // Add tag ID (select)
+        return [...prevIds, idString];
+      }
+    });
+  };
+
+  // Function to clear all filters
+  const handleClearFilter = () => {
+      setSelectedTagIds([]);
+  }
+
+
+  // Memoized function to perform the filtering based on the 'AND' logic
+  const filteredTasks = React.useMemo(() => {
+    if (selectedTagIds.length === 0) {
+      // If no tags are selected, show all tasks
+      return tasks;
+    }
+
+    // Filter tasks based on the 'AND' logic:
+    // A task is included only if it contains ALL selected tag IDs.
+    return tasks.filter(task => {
+      // Get the tag IDs of the current task as an array of strings
+      // Ensure we handle null/undefined tags field gracefully
+      const taskTagIds = task.tags ? task.tags.split(',').map(id => id.trim()).filter(id => id !== '') : [];
+
+      // Check if EVERY selected tag ID is present in the task's tag IDs
+      return selectedTagIds.every(selectedId =>
+        taskTagIds.includes(selectedId)
+      );
+    });
+  }, [tasks, selectedTagIds]); // Re-calculate only when tasks or filter changes
+
+  // --- END NEW Filter Logic and Handler ---
 
 
   // --- CREATE Handlers (Unchanged) ---
@@ -158,7 +207,7 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
   // --- End DELETE Handlers ---
 
 
-  // --- EDIT Handlers (Unchanged logic, now calls EditTask component) ---
+  // --- EDIT Handlers (Unchanged logic) ---
 
   // Handler to open the edit modal
   const handleEditRequest = (task) => {
@@ -216,21 +265,42 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
           </button>
         </div>
 
+        {/* NEW: Tag Filter Component */}
+        <TagFilter
+            availableTags={availableTags}
+            selectedTagIds={selectedTagIds}
+            onFilterChange={handleFilterChange}
+        />
+        {/* Button to clear all filters */}
+        <button
+            className={`clear-filter-button ${selectedTagIds.length === 0 ? 'inactive' : ''}`}
+            onClick={handleClearFilter}
+            disabled={selectedTagIds.length === 0}
+        >
+            Clear Filters ({selectedTagIds.length})
+        </button>
+
+
         <div className="tasks-list">
-          {tasks.map(task => (
-            <TaskCard
-              key={task.id}
-              id={task.id}
-              name={task.name}
-              tagNames={task.tagNames}
-              description={task.description}
-              tags={task.tags}
-              additional_data={task.additional_data}
-              is_active={task.is_active}
-              onDeleteRequest={handleDeleteRequest}
-              onEditRequest={handleEditRequest}
-            />
-          ))}
+          {/* Display the filtered list of tasks */}
+          {filteredTasks.length > 0 ? (
+            filteredTasks.map(task => (
+                <TaskCard
+                    key={task.id}
+                    id={task.id}
+                    name={task.name}
+                    tagNames={task.tagNames}
+                    description={task.description}
+                    tags={task.tags}
+                    additional_data={task.additional_data}
+                    is_active={task.is_active}
+                    onDeleteRequest={handleDeleteRequest}
+                    onEditRequest={handleEditRequest}
+                />
+            ))
+          ) : (
+             <p className="no-tasks-found">No tasks found matching all selected tags.</p>
+          )}
         </div>
       </div>
 
@@ -252,7 +322,7 @@ const TasksView = ({ title, content, tasks, availableTags, fetchData, postNewTag
         postNewTag={postNewTag}     // Pass POST function for new tags
       />
 
-      {/* NEW: Edit Task Modal - Using separate component */}
+      {/* Edit Task Modal - Using separate component */}
       <EditTask
         isOpen={isEditModalOpen}
         taskData={taskToEdit}
@@ -316,7 +386,7 @@ const App = () => {
         fetchData();
     }, [fetchData]);
 
-    // --- Core POST New Tag Function (MODIFIED TO PREVENT MODAL CLOSURE) ---
+    // --- Core POST New Tag Function (Modified to prevent modal closure) ---
     // Function passed to CreateTask/EditModal to handle new tag creation
     const postNewTag = async (name, additional_data) => {
         const newTag = { name, additional_data };
@@ -332,8 +402,7 @@ const App = () => {
                 // Get the newly created tag object
                 const createdTag = await postResponse.json();
 
-                // *** FIX: Update ONLY the availableTags state. ***
-                // This prevents the App component from re-rendering and closing the modal.
+                // FIX: Update ONLY the availableTags state.
                 setAvailableTags(prevTags => [...prevTags, createdTag]);
 
                 // Return the newly created tag object
@@ -408,11 +477,10 @@ const App = () => {
                                         postNewTag={postNewTag}
                                     />;
                                 } else if (item.path === '/tags') {
-                                    // Pass central data and fetch function to TagsView
+                                    // TagsView uses its own logic to fetch data
                                     element = <TagsView
                                         title={item.title}
-                                        tasks={tasks} // Pass tasks for delete validation
-                                        // TagsView uses its own logic to fetch data, but here we can pass fetchData for general update
+                                        tasks={tasks}
                                         fetchTags={fetchData}
                                     />;
                                 } else if (item.path === '/info') {
