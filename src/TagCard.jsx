@@ -2,11 +2,18 @@
 
 // TagCard component, displays a single tag item with its details.
 // Implemented as a simple Function Component.
-const TagCard = ({ id, name, additional_data, onDeleteRequest }) => {
+const TagCard = ({ id, name, additional_data, onDeleteRequest, onEditRequest }) => { // NEW: Added onEditRequest
+
     // Handler to initiate the delete process
     const handleDeleteClick = () => {
         // Calls the parent function to open the modal
         onDeleteRequest(id, name);
+    };
+
+    // NEW: Handler to initiate the edit process
+    const handleEditClick = () => {
+        // Calls the parent function to open the edit modal, passing the current tag data
+        onEditRequest({ id, name, additional_data });
     };
 
     return (
@@ -31,10 +38,19 @@ const TagCard = ({ id, name, additional_data, onDeleteRequest }) => {
                 )}
             </div>
 
-            {/* NEW: Delete button container */}
+            {/* Action buttons container */}
             <div className="tag-actions">
+                {/* NEW: Edit button */}
                 <button
-                    className="delete-button" // Reusing the red delete button style
+                    className="edit-button" // Orange button style
+                    onClick={handleEditClick}
+                >
+                    Edit
+                </button>
+
+                {/* Delete button */}
+                <button
+                    className="delete-button" // Red button style
                     onClick={handleDeleteClick}
                 >
                     Delete tag

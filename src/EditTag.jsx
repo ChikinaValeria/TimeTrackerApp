@@ -1,25 +1,26 @@
-// CreateTag.jsx
-// Function component for the modal form used to create a new tag.
+// EditTag.jsx
+// Function component for the modal form used to edit an existing tag.
 
 import React, { useState, useEffect } from 'react';
 
-// The CreateTag component acts as a modal, displaying the form fields.
-const CreateTag = ({ isOpen, onCreate, onCancel }) => {
-    const MAX_LENGTH = 20; // Max length for name and additional_data fields
+// The EditTag component acts as a modal, displaying the form fields pre-filled.
+const EditTag = ({ isOpen, tagData, onSave, onCancel }) => {
+    const MAX_LENGTH = 20;
 
-    // State Hooks for form fields, initialized to empty strings.
+    // State Hooks for form fields, initialized to empty strings or data from props
     const [tagName, setTagName] = useState('');
     const [additionalData, setAdditionalData] = useState('');
 
-    // Effect Hook to clear form state when modal closes (when isOpen changes to false).
+    // Effect Hook to reset form state when a new tag is passed for editing or when modal opens/closes
     useEffect(() => {
-        if (!isOpen) {
-            setTagName('');
-            setAdditionalData('');
+        if (tagData) {
+            // Fill fields with current tag data when modal opens
+            setTagName(tagData.name || '');
+            setAdditionalData(tagData.additional_data || '');
         }
-    }, [isOpen]);
+    }, [tagData]); // Dependency on tagData ensures state is synced when it changes
 
-    if (!isOpen) return null;
+    if (!isOpen || !tagData) return null;
 
     // Handler for Tag Name input with length check (max 20 chars)
     const handleNameChange = (e) => {
@@ -37,8 +38,8 @@ const CreateTag = ({ isOpen, onCreate, onCancel }) => {
         }
     };
 
-    // Handler for Save button (triggers POST request in parent TagsView)
-    const handleCreate = (e) => {
+    // Handler for Save button (triggers PUT request in parent TagsView)
+    const handleSave = (e) => {
         e.preventDefault(); // Prevent default form submission
 
         // Simple validation
@@ -47,27 +48,28 @@ const CreateTag = ({ isOpen, onCreate, onCancel }) => {
             return;
         }
 
-        // Tag object for POST request, using simple data structures.
-        const newTag = {
+        // Tag object for PUT request, including the ID
+        const updatedTag = {
+            id: tagData.id, // Ensure ID is passed for the endpoint
             name: tagName,
             additional_data: additionalData,
         };
 
-        onCreate(newTag);
+        onSave(updatedTag);
         // Parent component (TagsView) will handle closing the modal and fetching new data.
     };
 
     return (
         <div className="modal-backdrop">
             <div className="modal-content edit-modal-content">
-                <h3 className="modal-title">Add New Tag</h3>
-                <form className="edit-form" onSubmit={handleCreate}>
+                <h3 className="modal-title">Edit Tag: {tagData.id}</h3>
+                <form className="edit-form" onSubmit={handleSave}>
 
                     {/* Tag Name Field */}
                     <div className="form-group">
-                        <label htmlFor="newTagName">Tag Name:</label>
+                        <label htmlFor="editTagName">Tag Name:</label>
                         <input
-                            id="newTagName"
+                            id="editTagName"
                             type="text"
                             value={tagName}
                             onChange={handleNameChange}
@@ -80,9 +82,9 @@ const CreateTag = ({ isOpen, onCreate, onCancel }) => {
 
                     {/* Additional Data Field */}
                     <div className="form-group">
-                        <label htmlFor="newAdditionalData">Additional Data:</label>
+                        <label htmlFor="editAdditionalData">Additional Data:</label>
                         <input
-                            id="newAdditionalData"
+                            id="editAdditionalData"
                             type="text"
                             value={additionalData}
                             onChange={handleAdditionalDataChange}
@@ -102,4 +104,4 @@ const CreateTag = ({ isOpen, onCreate, onCancel }) => {
     );
 };
 
-export default CreateTag;
+export default EditTag;

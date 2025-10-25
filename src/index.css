@@ -44,7 +44,7 @@ background-color: var(--color-bg-white);
 background-color: var(--color-bg-light);
 }
 
-.task-card, .modal-content {
+.task-card, .modal-content, .tag-card { /* Added .tag-card */
 background-color: var(--color-bg-white);
 }
 
@@ -335,16 +335,17 @@ color: var(--color-text);
 margin: 0 0 0 auto; /* Pushes additional data to the right */
 }
 
-/* NEW: Container for tag actions (to align buttons) */
+/* Container for tag actions (to align buttons) */
 .tag-actions {
 display: flex;
 flex-shrink: 0;
-gap: 8px; /* For potential future buttons */
+gap: 8px; /* Gap between buttons */
 align-items: center;
 }
 
-/* Adjust delete button size for the smaller tag card */
-.tag-actions .delete-button {
+/* Adjust delete and edit button size for the smaller tag card */
+.tag-actions .delete-button,
+.tag-actions .edit-button { /* Applied to both edit and delete */
     padding: 8px 14px;
     font-size: 0.9rem;
 }

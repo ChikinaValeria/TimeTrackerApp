@@ -3,8 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import TagCard from './TagCard.jsx';
 import CreateTag from './CreateTag.jsx';
-// Assuming ConfirmationModal is a dependency or passed as prop,
-// for simplicity in this student task, we redefine it here.
+import EditTag from './EditTag.jsx'; // NEW: Import EditTag component
 
 // --- Confirmation Modal Component (Redefined for TagsView Scope) ---
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
@@ -40,6 +39,10 @@ const TagsView = ({ title }) => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [tagToDelete, setTagToDelete] = useState(null);
 
+    // NEW: State Hooks for edit modal
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [tagToEdit, setTagToEdit] = useState(null);
+
 
     // Effect Hook for data fetching using useCallback to stabilize the fetch function.
     const fetchTags = useCallback(async () => {
@@ -47,9 +50,11 @@ const TagsView = ({ title }) => {
         setError(null);
         try {
             const response = await fetch(`${API_URL}/tags`);
+
             if (!response.ok) {
                 throw new Error("Failed to fetch tags.");
             }
+
             const tagsData = await response.json();
             setTags(tagsData);
             setIsLoading(false);
@@ -99,7 +104,7 @@ const TagsView = ({ title }) => {
     // --- End CREATE Handlers ---
 
 
-    // --- NEW: DELETE Handlers ---
+    // --- DELETE Handlers (Unchanged) ---
 
     // Handler to open the delete confirmation modal
     const handleDeleteRequest = (tagId, tagName) => {
@@ -174,6 +179,50 @@ const TagsView = ({ title }) => {
     // --- End DELETE Handlers ---
 
 
+    // --- NEW: EDIT Handlers ---
+
+    // Handler to open the edit modal
+    const handleEditRequest = (tag) => {
+        setTagToEdit(tag);
+        setIsEditModalOpen(true);
+    };
+
+    // Handler for Cancel button in edit modal
+    const handleCancelEdit = () => {
+        setIsEditModalOpen(false);
+        setTagToEdit(null); // Clear the tag to edit
+    };
+
+    // Handler for Save button in edit modal (PUT request)
+    const handleSaveEdit = async (updatedTag) => {
+        try {
+            const putResponse = await fetch(`${API_URL}/tags/${updatedTag.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: updatedTag.name,
+                    additional_data: updatedTag.additional_data,
+                }),
+            });
+
+            if (putResponse.ok) {
+                // Re-fetch the updated tag list to ensure UI is updated
+                await fetchTags();
+            } else {
+                console.error(`Failed to update tag ${updatedTag.id}: ${putResponse.statusText}`);
+                alert(`Update failed. Server responded with: ${putResponse.status}`);
+            }
+        } catch (err) {
+            console.error("Error during PUT request: ", err);
+            alert("An error occurred while saving the tag.");
+        } finally {
+            setIsEditModalOpen(false);
+            setTagToEdit(null);
+        }
+    };
+    // --- End EDIT Handlers ---
+
+
     if (isLoading) {
         return <div className="view-content-box"><p>Loading tags...</p></div>;
     }
@@ -209,7 +258,8 @@ const TagsView = ({ title }) => {
                                 id={tag.id}
                                 name={tag.name}
                                 additional_data={tag.additional_data}
-                                onDeleteRequest={handleDeleteRequest} // Pass the delete handler
+                                onDeleteRequest={handleDeleteRequest}
+                                onEditRequest={handleEditRequest} // NEW: Pass the edit handler
                             />
                         ))}
                     </div>
@@ -221,6 +271,14 @@ const TagsView = ({ title }) => {
                 isOpen={isCreateModalOpen}
                 onCreate={handleConfirmCreate}
                 onCancel={handleCancelCreate}
+            />
+
+            {/* NEW: Edit Tag Modal */}
+            <EditTag
+                isOpen={isEditModalOpen}
+                tagData={tagToEdit}
+                onSave={handleSaveEdit}
+                onCancel={handleCancelEdit}
             />
 
             {/* Delete Confirmation Modal (using local definition) */}
