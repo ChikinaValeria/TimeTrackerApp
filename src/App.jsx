@@ -366,7 +366,7 @@ const TasksView = ({ title, content }) => {
           </button>
         </div>
 
-        <p className="view-text">{content}</p>
+        {/* REMOVED: <p className="view-text">{content}</p> */}
 
         <div className="tasks-list">
           {tasks.map(task => (
