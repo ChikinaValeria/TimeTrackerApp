@@ -283,7 +283,7 @@ background-color: var(--color-danger-hover);
 }
 
 /* ------------------------------------------- */
-/* TagCard Стили (NEW SECTION) */
+/* TagCard Стили (MODIFIED) */
 /* ------------------------------------------- */
 
 .tags-list {
@@ -303,6 +303,7 @@ box-shadow: 0 2px 4px 0 var(--color-shadow); /* Lighter shadow */
 border-left: 5px solid #3b82f6; /* Example color for tag cards */
 color: var(--color-text);
 display: flex;
+justify-content: space-between; /* Added to push actions to the right */
 align-items: center;
 }
 
@@ -311,6 +312,7 @@ flex-grow: 1;
 display: flex;
 align-items: baseline;
 gap: 15px; /* Spacing between name and ID */
+padding-right: 15px; /* Spacing before actions */
 }
 
 .tag-name {
@@ -332,6 +334,21 @@ font-weight: 400;
 color: var(--color-text);
 margin: 0 0 0 auto; /* Pushes additional data to the right */
 }
+
+/* NEW: Container for tag actions (to align buttons) */
+.tag-actions {
+display: flex;
+flex-shrink: 0;
+gap: 8px; /* For potential future buttons */
+align-items: center;
+}
+
+/* Adjust delete button size for the smaller tag card */
+.tag-actions .delete-button {
+    padding: 8px 14px;
+    font-size: 0.9rem;
+}
+
 
 /* ------------------------------------------- */
 /* Стили для Модальных окон (Modal) */

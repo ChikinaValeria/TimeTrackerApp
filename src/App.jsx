@@ -1,11 +1,11 @@
-// App.jsx (updated with TagsView and corrected viewData order)
+// App.jsx (updated with all features and correct routing)
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import TaskCard from './TaskCard.jsx';
 import InfoView from './InfoView.jsx';
 import CreateTask from './CreateTask.jsx';
-import TagsView from './TagsView.jsx'; // NEW: Import TagsView
+import TagsView from './TagsView.jsx'; // Import TagsView
 
 // API base URL
 const API_URL = 'http://127.0.0.1:3010';
@@ -131,7 +131,7 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
 
 const viewData = [
   { path: '/tasks', name: 'Tasks', content: 'Tasks List', title: 'Tasks' },
-  // NEW: Tags view added as the second item as requested.
+  // Tags view added as the second item
   { path: '/tags', name: 'Tags', content: 'Available Tags', title: 'Available Tags' },
   { path: '/task-activity-summary', name: 'Task activity summary', content: 'Task activity summary content', title: 'Task Activity Summary' },
   { path: '/tag-activity-summary', name: 'Tag activity summary', content: 'Tag activity summary content', title: 'Tag Activity Summary' },
@@ -366,7 +366,7 @@ const TasksView = ({ title, content }) => {
           </button>
         </div>
 
-        {/* REMOVED: <p className="view-text">{content}</p> */}
+        {/* Removed: <p className="view-text">{content}</p> */}
 
         <div className="tasks-list">
           {tasks.map(task => (
@@ -444,8 +444,10 @@ const App = () => {
                 if (item.path === '/tasks') {
                   // Pass title and content for TasksView
                   element = <TasksView title={item.title} content={item.content} />;
-                // NEW: Handle TagsView rendering
+                // Handle TagsView rendering
                 } else if (item.path === '/tags') {
+                  // NOTE: TagsView uses its own ConfirmationModal locally,
+                  // but we pass the title here.
                   element = <TagsView title={item.title} />;
                 } else if (item.path === '/info') {
                   element = <InfoView />;

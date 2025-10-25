@@ -2,9 +2,30 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import TagCard from './TagCard.jsx';
-import CreateTag from './CreateTag.jsx'; // NEW: Import CreateTag component
+import CreateTag from './CreateTag.jsx';
+// Assuming ConfirmationModal is a dependency or passed as prop,
+// for simplicity in this student task, we redefine it here.
 
-// API base URL is hardcoded here for simplicity, typically it comes from App.jsx or context.
+// --- Confirmation Modal Component (Redefined for TagsView Scope) ---
+const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="modal-backdrop">
+            <div className="modal-content">
+                <h3 className="modal-title">{title}</h3>
+                <p className="modal-message">{message}</p>
+                <div className="modal-actions">
+                    <button className="modal-button yes-button" onClick={onConfirm}>Yes</button>
+                    <button className="modal-button no-button" onClick={onCancel}>No</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+// --- End Confirmation Modal Component ---
+
+
 const API_URL = 'http://127.0.0.1:3010';
 
 // TagsView component fetches and displays all available tags.
@@ -13,25 +34,24 @@ const TagsView = ({ title }) => {
     const [tags, setTags] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    // NEW: State Hook for create tag modal visibility
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+    // State Hooks for delete confirmation modal
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [tagToDelete, setTagToDelete] = useState(null);
+
 
     // Effect Hook for data fetching using useCallback to stabilize the fetch function.
     const fetchTags = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-            // GET request to fetch all tags
             const response = await fetch(`${API_URL}/tags`);
-
             if (!response.ok) {
-                // Throw error if response status is not successful (e.g., 404, 500)
                 throw new Error("Failed to fetch tags.");
             }
-
             const tagsData = await response.json();
-            setTags(tagsData); // Update state with fetched data
+            setTags(tagsData);
             setIsLoading(false);
 
         } catch (err) {
@@ -39,14 +59,14 @@ const TagsView = ({ title }) => {
             setError("Failed to fetch tags from the server.");
             setIsLoading(false);
         }
-    }, []); // Empty dependency array means this function is created once
+    }, []);
 
-    // Effect Hook to run fetchTags on component mount and automatically update UI
+    // Effect Hook to run fetchTags on component mount
     useEffect(() => {
         fetchTags();
-    }, [fetchTags]); // Depend on fetchTags
+    }, [fetchTags]);
 
-    // NEW: CREATE Handlers
+    // --- CREATE Handlers (Unchanged) ---
     const handleOpenCreateModal = () => {
         setIsCreateModalOpen(true);
     };
@@ -57,17 +77,13 @@ const TagsView = ({ title }) => {
 
     const handleConfirmCreate = async (newTag) => {
         try {
-            // POST request to create a new tag
             const postResponse = await fetch(`${API_URL}/tags`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newTag),
             });
 
             if (postResponse.ok) {
-                // Automatically update UI after successful creation
                 await fetchTags();
             } else {
                 console.error(`Failed to create tag: ${postResponse.statusText}`);
@@ -77,9 +93,85 @@ const TagsView = ({ title }) => {
             console.error("Error during POST request: ", err);
             alert("An error occurred while creating the tag.");
         } finally {
-            setIsCreateModalOpen(false); // Close the modal regardless of success
+            setIsCreateModalOpen(false);
         }
     };
+    // --- End CREATE Handlers ---
+
+
+    // --- NEW: DELETE Handlers ---
+
+    // Handler to open the delete confirmation modal
+    const handleDeleteRequest = (tagId, tagName) => {
+        setTagToDelete({ id: tagId, name: tagName });
+        setIsDeleteModalOpen(true);
+    };
+
+    // Handler for Cancel button in delete modal
+    const handleCancelDelete = () => {
+        setIsDeleteModalOpen(false);
+        setTagToDelete(null);
+    };
+
+    // Handler for Confirm button in delete modal (main logic)
+    const handleConfirmDelete = async () => {
+        if (!tagToDelete) return;
+
+        const tagIdToDelete = String(tagToDelete.id);
+        let isTagUsed = false;
+
+        // 1. Fetch ALL tasks for validation (required by prompt)
+        try {
+            const tasksResponse = await fetch(`${API_URL}/tasks`);
+            if (!tasksResponse.ok) throw new Error("Failed to fetch tasks for validation.");
+            const allTasks = await tasksResponse.json();
+
+            // Check if the tag ID is present in any task's 'tags' string
+            isTagUsed = allTasks.some(task => {
+                if (!task.tags) return false;
+                const tagIdsInTask = task.tags.split(',').map(s => s.trim());
+                return tagIdsInTask.includes(tagIdToDelete);
+            });
+        } catch (validationErr) {
+            console.error("Task validation failed: ", validationErr);
+            alert("Failed to perform task validation before deletion. Aborting delete.");
+            setIsDeleteModalOpen(false);
+            setTagToDelete(null);
+            return;
+        }
+
+        // 2. If tag is used, show alert and abort
+        if (isTagUsed) {
+            alert(`Tag "${tagToDelete.name}" cannot be deleted because it is assigned to one or more tasks.`);
+            setIsDeleteModalOpen(false);
+            setTagToDelete(null);
+            return;
+        }
+
+        // 3. If tag is not used, perform DELETE request
+        try {
+            const deleteResponse = await fetch(`${API_URL}/tags/${tagIdToDelete}`, {
+                method: 'DELETE',
+            });
+
+            if (deleteResponse.ok) {
+                // Update local state immediately after successful deletion
+                setTags(currentTags =>
+                    currentTags.filter(tag => String(tag.id) !== tagIdToDelete)
+                );
+            } else {
+                console.error(`Failed to delete tag ${tagIdToDelete}: ${deleteResponse.statusText}`);
+                alert(`Deletion failed. Server responded with: ${deleteResponse.status}`);
+            }
+        } catch (err) {
+            console.error("Error during DELETE request: ", err);
+            alert("An error occurred while deleting the tag.");
+        } finally {
+            setIsDeleteModalOpen(false);
+            setTagToDelete(null);
+        }
+    };
+    // --- End DELETE Handlers ---
 
 
     if (isLoading) {
@@ -93,12 +185,12 @@ const TagsView = ({ title }) => {
     return (
         <>
             <div className="view-content-box">
-                {/* NEW: Header container for title and Add button */}
+                {/* Header container for title and Add button */}
                 <div className="task-view-header">
                     <h2 className="view-title">{title}</h2>
-                    {/* NEW: Button to open the Create Tag modal (using add-task-button styles) */}
+                    {/* Button to open the Create Tag modal */}
                     <button
-                        className="add-task-button" // Reusing bright green button style
+                        className="add-task-button"
                         onClick={handleOpenCreateModal}
                     >
                         Add new tag
@@ -117,17 +209,27 @@ const TagsView = ({ title }) => {
                                 id={tag.id}
                                 name={tag.name}
                                 additional_data={tag.additional_data}
+                                onDeleteRequest={handleDeleteRequest} // Pass the delete handler
                             />
                         ))}
                     </div>
                 )}
             </div>
 
-            {/* NEW: Create Tag Modal using the imported component */}
+            {/* Create Tag Modal */}
             <CreateTag
                 isOpen={isCreateModalOpen}
                 onCreate={handleConfirmCreate}
                 onCancel={handleCancelCreate}
+            />
+
+            {/* Delete Confirmation Modal (using local definition) */}
+            <ConfirmationModal
+                isOpen={isDeleteModalOpen}
+                title="Confirm Deletion"
+                message={`Do you want to delete the tag: ${tagToDelete?.name}?`}
+                onConfirm={handleConfirmDelete}
+                onCancel={handleCancelDelete}
             />
         </>
     );
