@@ -1,6 +1,6 @@
-// App.jsx (updated)
+// App.jsx (updated with Edit functionality, cleaned of extra whitespace)
 
-import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import TaskCard from './TaskCard.jsx';
 import InfoView from './InfoView.jsx';
@@ -8,7 +8,104 @@ import InfoView from './InfoView.jsx';
 // API base URL
 const API_URL = 'http://127.0.0.1:3010';
 
-// --- Modal Component ---
+// --- Edit Modal Component ---
+// Modal for editing task details
+const EditModal = ({ isOpen, taskData, onSave, onCancel }) => {
+  const MAX_LENGTH = 40;
+
+  // State for form fields, initialized with taskData props
+  const [taskName, setTaskName] = useState(taskData?.name || '');
+  const [additionalData, setAdditionalData] = useState(taskData?.additional_data || '');
+
+  // Effect to reset form state when a new task is passed for editing
+  useEffect(() => {
+    if (taskData) {
+      setTaskName(taskData.name || '');
+      setAdditionalData(taskData.additional_data || '');
+    }
+  }, [taskData]);
+
+  if (!isOpen || !taskData) return null;
+
+  // Handler for form field changes with length check
+  const handleNameChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= MAX_LENGTH) {
+      setTaskName(value);
+    }
+  };
+
+  const handleAdditionalDataChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= MAX_LENGTH) {
+      setAdditionalData(value);
+    }
+  };
+
+  // Handler for Save button
+  const handleSave = () => {
+    // Collect all data, ensuring we send all original fields as required by the prompt
+    const updatedTask = {
+      ...taskData,
+      name: taskName, // Updated fields
+      additional_data: additionalData, // Updated fields
+      // tags, description, is_active remain from original taskData
+    };
+    onSave(updatedTask);
+  };
+
+  return (
+    <div className="modal-backdrop">
+      <div className="modal-content edit-modal-content">
+        <h3 className="modal-title">Edit Task: {taskData.id}</h3>
+        <form className="edit-form" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
+
+          {/* Task Name Field */}
+          <div className="form-group">
+            <label htmlFor="taskName">Task Name:</label>
+            <input
+              id="taskName"
+              type="text"
+              value={taskName}
+              onChange={handleNameChange}
+              className="form-input"
+              maxLength={MAX_LENGTH} // HTML-based max length
+            />
+            <p className="char-limit-message">Max length: {MAX_LENGTH} characters.</p>
+          </div>
+
+          {/* Additional Data Field */}
+          <div className="form-group">
+            <label htmlFor="additionalData">Additional Data:</label>
+            <input
+              id="additionalData"
+              type="text"
+              value={additionalData}
+              onChange={handleAdditionalDataChange}
+              className="form-input"
+              maxLength={MAX_LENGTH} // HTML-based max length
+            />
+            <p className="char-limit-message">Max length: {MAX_LENGTH} characters.</p>
+          </div>
+
+          {/* Tags field (display only) */}
+          <div className="form-group">
+            <label>Tags (IDs):</label>
+            <p className="tag-display">{taskData.tags || 'No tags'}</p>
+          </div>
+
+          <div className="modal-actions">
+            <button type="submit" className="modal-button save-button">Save</button>
+            <button type="button" className="modal-button cancel-button" onClick={onCancel}>Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+// --- End Edit Modal Component ---
+
+// --- Modal Component (Delete Confirmation) ---
 // Simple modal for delete confirmation
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
   if (!isOpen) return null;
@@ -29,8 +126,9 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
 };
 // --- End Modal Component ---
 
+
 const viewData = [
-  { path: '/tasks', name: 'Tasks', content: 'Tasks List', title: 'Tasks' }, // Added title for TasksView
+  { path: '/tasks', name: 'Tasks', content: 'Tasks List', title: 'Tasks' },
   { path: '/task-activity-summary', name: 'Task activity summary', content: 'Task activity summary content', title: 'Task Activity Summary' },
   { path: '/tag-activity-summary', name: 'Tag activity summary', content: 'Tag activity summary content', title: 'Tag Activity Summary' },
   { path: '/info', name: 'Info', content: '', title: 'Information' },
@@ -60,17 +158,20 @@ const NavigationMenu = () => {
   );
 };
 
-// TasksView component updated for delete functionality
+// TasksView component updated for delete and edit functionality
 const TasksView = ({ title, content }) => {
   // State for task list and loading status
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // State for modal window
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  // State to store task details for deletion
+  // State for delete modal
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
+
+  // State for edit modal
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState(null);
 
   // Function to fetch tasks and tags
   const fetchData = useCallback(async () => {
@@ -81,7 +182,6 @@ const TasksView = ({ title, content }) => {
       const tagsResponse = await fetch(`${API_URL}/tags`);
       if (!tagsResponse.ok) throw new Error("Failed to fetch tags.");
       const tagsData = await tagsResponse.json();
-      // Create a map for quick tag name lookup
       const tagsMap = new Map(tagsData.map(tag => [String(tag.id), tag.name]));
 
       // 2. Fetch tasks
@@ -91,13 +191,11 @@ const TasksView = ({ title, content }) => {
 
       // 3. Combine tasks with tag names
       const combinedTasks = tasksData.map(task => {
-        // Split tags string (e.g., "1,2,3") into an array of IDs
         const tagIds = task.tags ? task.tags.split(',').filter(id => id.trim() !== '') : [];
-        // Map tag IDs to names
         const tagNames = tagIds.map(id => tagsMap.get(id)).filter(name => name);
         return {
           ...task,
-          tagNames: tagNames, // Add tagNames array to the task object
+          tagNames: tagNames, // For display
         };
       });
 
@@ -108,55 +206,95 @@ const TasksView = ({ title, content }) => {
       setError("Failed to fetch data from the server.");
       setIsLoading(false);
     }
-  }, []); // Empty dependency array means this function is created once
+  }, []);
 
   // Effect Hook to fetch data on component mount
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // Handler to open the modal and set the task to delete
+  // DELETE Handlers
   const handleDeleteRequest = (taskId, taskName) => {
     setTaskToDelete({ id: taskId, name: taskName });
-    setIsModalOpen(true);
+    setIsDeleteModalOpen(true);
   };
 
-  // Handler for 'No' button in modal
   const handleCancelDelete = () => {
-    setIsModalOpen(false);
-    setTaskToDelete(null); // Clear the task to delete
+    setIsDeleteModalOpen(false);
+    setTaskToDelete(null);
   };
 
-  // Handler for 'Yes' button in modal (confirmation)
   const handleConfirmDelete = async () => {
     if (!taskToDelete) return;
 
     try {
-      // Send DELETE request to the backend
       const deleteResponse = await fetch(`${API_URL}/tasks/${taskToDelete.id}`, {
         method: 'DELETE',
-        // No body needed for a standard REST DELETE request
       });
 
       if (deleteResponse.ok) {
-        // Update the UI: remove the task from the local state
-        // This ensures the UI is updated automatically (Task 3)
         setTasks(currentTasks =>
           currentTasks.filter(task => String(task.id) !== String(taskToDelete.id))
         );
       } else {
-        // Log error if DELETE request failed
         console.error(`Failed to delete task ${taskToDelete.id}: ${deleteResponse.statusText}`);
         alert(`Deletion failed. Server responded with: ${deleteResponse.status}`);
       }
     } catch (err) {
-      // Log network/other errors
       console.error("Error during DELETE request: ", err);
       alert("An error occurred while deleting the task.");
     } finally {
-      // Close modal and clear task state regardless of success
-      setIsModalOpen(false);
+      setIsDeleteModalOpen(false);
       setTaskToDelete(null);
+    }
+  };
+
+  // EDIT Handlers
+
+  // Handler to open the edit modal
+  const handleEditRequest = (task) => {
+    setTaskToEdit(task);
+    setIsEditModalOpen(true);
+  };
+
+  // Handler for Cancel button in edit modal
+  const handleCancelEdit = () => {
+    setIsEditModalOpen(false);
+    setTaskToEdit(null); // Clear the task to edit
+  };
+
+  // Handler for Save button in edit modal (PUT request)
+  const handleSaveEdit = async (updatedTask) => {
+    try {
+      const putResponse = await fetch(`${API_URL}/tasks/${updatedTask.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // Send the full updated task object as required
+        body: JSON.stringify({
+          id: updatedTask.id,
+          name: updatedTask.name,
+          description: updatedTask.description,
+          tags: updatedTask.tags,
+          additional_data: updatedTask.additional_data,
+          is_active: updatedTask.is_active,
+        }),
+      });
+
+      if (putResponse.ok) {
+        // Re-fetch the updated task list to ensure UI is updated
+        await fetchData();
+      } else {
+        console.error(`Failed to update task ${updatedTask.id}: ${putResponse.statusText}`);
+        alert(`Update failed. Server responded with: ${putResponse.status}`);
+      }
+    } catch (err) {
+      console.error("Error during PUT request: ", err);
+      alert("An error occurred while saving the task.");
+    } finally {
+      setIsEditModalOpen(false);
+      setTaskToEdit(null); // Close modal and clear task state
     }
   };
 
@@ -179,22 +317,37 @@ const TasksView = ({ title, content }) => {
           {tasks.map(task => (
             <TaskCard
               key={task.id}
-              id={task.id} // Pass task id to TaskCard
+              id={task.id}
               name={task.name}
               tagNames={task.tagNames}
-              onDeleteRequest={handleDeleteRequest} // Pass handler to TaskCard
+              // Pass full task data required for PUT request and form pre-fill
+              description={task.description}
+              tags={task.tags}
+              additional_data={task.additional_data}
+              is_active={task.is_active}
+
+              onDeleteRequest={handleDeleteRequest}
+              onEditRequest={handleEditRequest}
             />
           ))}
         </div>
       </div>
 
-      {/* Confirmation Modal */}
+      {/* Delete Confirmation Modal */}
       <ConfirmationModal
-        isOpen={isModalOpen}
+        isOpen={isDeleteModalOpen}
         title="Confirm Deletion"
         message={`Do you want to delete the task: ${taskToDelete?.name}?`}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
+      />
+
+      {/* Edit Task Modal */}
+      <EditModal
+        isOpen={isEditModalOpen}
+        taskData={taskToEdit}
+        onSave={handleSaveEdit}
+        onCancel={handleCancelEdit}
       />
     </>
   );
