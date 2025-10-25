@@ -1,3 +1,4 @@
+/* index.css */
 :root {
 --color-text: #1f2937;
 --color-bg-light: #f9fafb;
@@ -13,6 +14,8 @@
 --color-save-btn: #ffffff; /* NEW: White color for Save button */
 --color-save-text: #1f2937; /* NEW: Text color for Save button */
 --color-cancel-btn: #9ca3af; /* NEW: Gray color for Cancel button in edit */
+--color-add-btn: #10b981; /* NEW: Bright green color for Add new task button */
+--color-add-btn-hover: #059669; /* NEW: Darker green for hover */
 
 font-family: 'Inter', sans-serif;
 }
@@ -25,33 +28,38 @@ margin: 0;
 
 /* Dark theme support (simple example using prefers-color-scheme) */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --color-text: #f9fafb;
-    --color-bg-light: #1f2937;
-    --color-bg-white: #374151;
-    --color-shadow: rgba(255, 255, 255, 0.1);
-    --color-border: #4b5563;
-  }
+:root {
+--color-text: #f9fafb;
+--color-bg-light: #1f2937;
+--color-bg-white: #374151;
+--color-shadow: rgba(255, 255, 255, 0.1);
+--color-border: #4b5563;
+}
 
-  .main-container {
-    background-color: var(--color-bg-white);
-  }
+.main-container {
+background-color: var(--color-bg-white);
+}
 
-  .view-content-box {
-    background-color: var(--color-bg-light);
-  }
+.view-content-box {
+background-color: var(--color-bg-light);
+}
 
-  .task-card, .modal-content {
-    background-color: var(--color-bg-white);
-  }
+.task-card, .modal-content {
+background-color: var(--color-bg-white);
+}
 
-  .save-button {
-    color: var(--color-save-text); /* Ensure save button text is visible in dark mode */
-  }
+.save-button {
+color: var(--color-save-text); /* Ensure save button text is visible in dark mode */
+}
 
-  .yes-button {
-    color: var(--color-text);
-  }
+.yes-button {
+color: var(--color-text);
+}
+
+/* Ensure new button colors look good in dark mode */
+.add-task-button {
+color: var(--color-bg-white);
+}
 }
 
 .app-wrapper {
@@ -122,268 +130,313 @@ box-shadow: inset 0 2px 4px 0 var(--color-shadow);
 color: var(--color-text);
 }
 
+/* ------------------------------------------- */
+/* СТИЛИ ЗАДАЧ И КНОПКИ 'ADD NEW TASK' */
+/* ------------------------------------------- */
+
+/* Контейнер для заголовка и кнопки "Add new task" */
+.task-view-header {
+display: flex;
+justify-content: space-between; /* Размещает заголовок слева, кнопку справа */
+align-items: center;
+margin-bottom: 16px;
+}
+
 .view-title {
 font-size: 1.5rem;
 font-weight: 600;
-margin-bottom: 16px;
-color: var(--color-text); /* Use text color as primary fallback */
+margin-top: 0;
+margin-bottom: 0; /* Убираем лишний отступ */
+color: var(--color-text);
+}
+
+/* Стили для кнопки Add New Task */
+.add-task-button {
+background-color: var(--color-add-btn); /* Ярко-зеленый */
+color: var(--color-bg-white);
+border: none;
+padding: 10px 18px;
+border-radius: 9999px; /* Полностью скругленные углы */
+cursor: pointer;
+font-size: 1rem;
+font-weight: 600;
+transition: background-color 0.2s;
+flex-shrink: 0;
+}
+
+.add-task-button:hover {
+background-color: var(--color-add-btn-hover);
 }
 
 .view-text {
 font-size: 1.125rem;
+margin-top: 0;
 }
 
 .tasks-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 24px;
+display: flex;
+flex-direction: column;
+gap: 16px;
+margin-top: 24px;
 }
 
-/* Styles for the visual Task Card element */
+/* ------------------------------------------- */
+/* TaskCard Стили */
+/* ------------------------------------------- */
+
+/* Стили для визуального элемента Task Card */
 .task-card {
-  /* CRITICAL: RESTORED Visual styles for card (background, border, shadow) */
-  background-color: var(--color-bg-white);
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px -1px var(--color-shadow); /* Shadow is back */
-  border-left: 5px solid hsl(60, 91%, 60%); /* Border is back */
-  color: var(--color-text);
+background-color: var(--color-bg-white);
+padding: 20px;
+border-radius: 8px;
+box-shadow: 0 4px 6px -1px var(--color-shadow); /* Тень */
+border-left: 5px solid hsl(60, 91%, 60%); /* Цветная левая граница */
+color: var(--color-text);
 
-  /* Flexbox for content arrangement (content left, buttons right) */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Flexbox для расположения содержимого (контент слева, кнопки справа) */
+display: flex;
+justify-content: space-between;
+align-items: center;
 }
 
-/* Container for name and tags to group them together */
+/* Контейнер для имени и тегов, чтобы сгруппировать их */
 .task-content {
-  flex-grow: 1; /* Allows content to take up most space */
-  padding-right: 15px; /* Add some space before the buttons */
+flex-grow: 1; /* Позволяет контенту занять большую часть пространства */
+padding-right: 15px; /* Небольшой отступ перед кнопками */
 }
 
 .task-name {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-top: 0;
-  margin-bottom: 5px; /* Adjusted margin to fit additional data closer */
-  color: var(--color-text);
-  word-wrap: break-word;
+font-size: 1.25rem;
+font-weight: 700;
+margin-top: 0;
+margin-bottom: 5px;
+color: var(--color-text);
+word-wrap: break-word;
 }
 
-/* NEW: Styles for Additional Data */
+/* Стили для Additional Data */
 .additional-data {
-  font-size: 1rem; /* Smaller than task name */
-  font-weight: 400; /* Not bold */
-  color: var(--color-text);
-  margin-top: 0;
-  margin-bottom: 12px; /* Space before tags */
-  word-wrap: break-word;
+font-size: 1rem;
+font-weight: 400;
+color: var(--color-text);
+margin-top: 0;
+margin-bottom: 12px;
+word-wrap: break-word;
 }
 
 .task-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+display: flex;
+flex-wrap: wrap;
+gap: 8px;
 }
 
 .task-tag {
-  display: inline-block;
-  background-color: hwb(60 55% 6%);
-  color: hsl(31, 91%, 37%);
-  padding: 4px 10px;
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-transform: capitalize;
+display: inline-block;
+background-color: hwb(60 55% 6%);
+color: hsl(31, 91%, 37%);
+padding: 4px 10px;
+border-radius: 9999px;
+font-size: 0.875rem;
+font-weight: 500;
+text-transform: capitalize;
 }
 
+/* --- ИСПРАВЛЕНИЕ: СКРЫВАЕМ ТЕГ "NO TAGS" --- */
 .task-tag.no-tag {
-  background-color: var(--color-border);
-  color: var(--color-text);
+display: none; /* Скрываем элемент полностью, если логика его рендерит */
 }
+/* ------------------------------------------- */
 
-/* Action buttons container to group Edit and Delete */
+
+/* Контейнер для кнопок действий */
 .task-actions {
-  display: flex;
-  flex-shrink: 0; /* Ensures buttons don't wrap too aggressively */
-  gap: 8px; /* Space between buttons */
-  align-items: center;
+display: flex;
+flex-shrink: 0;
+gap: 8px;
+align-items: center;
 }
 
-/* Base styles for all task action buttons */
+/* Базовые стили для кнопок действий */
 .edit-button,
 .delete-button {
-  border: none;
-  padding: 10px 18px;
-  border-radius: 8px; /* Rounded corners */
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: background-color 0.2s;
-  flex-shrink: 0;
+border: none;
+padding: 10px 18px;
+border-radius: 8px;
+cursor: pointer;
+font-size: 1rem;
+font-weight: 600;
+transition: background-color 0.2s;
+flex-shrink: 0;
 }
 
-/* Styles for Edit button (Orange) */
+/* Стили для кнопки Edit (Оранжевый) */
 .edit-button {
-  background-color: var(--color-edit);
-  color: var(--color-bg-white);
+background-color: var(--color-edit);
+color: var(--color-bg-white);
 }
 
 .edit-button:hover {
-  background-color: var(--color-edit-hover);
+background-color: var(--color-edit-hover);
 }
 
-/* Styles for Delete button (Red) */
+/* Стили для кнопки Delete (Красный) */
 .delete-button {
-  background-color: var(--color-danger);
-  color: var(--color-bg-white);
+background-color: var(--color-danger);
+color: var(--color-bg-white);
 }
 
 .delete-button:hover {
-  background-color: var(--color-danger-hover);
+background-color: var(--color-danger-hover);
 }
 
-/* Styles for Modal */
+/* ------------------------------------------- */
+/* Стили для Модальных окон (Modal) */
+/* ------------------------------------------- */
+
 .modal-backdrop {
-  position: fixed; /* Fixed position over everything */
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000; /* Ensure it's on top */
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5);
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 1000;
 }
 
 .modal-content {
-  background-color: var(--color-bg-white);
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  max-width: 400px;
-  width: 90%;
-  color: var(--color-text);
-  text-align: center;
+background-color: var(--color-bg-white);
+padding: 30px;
+border-radius: 12px;
+box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+max-width: 400px;
+width: 90%;
+color: var(--color-text);
+text-align: center; /* Для ConfirmationModal */
 }
 
-/* Form specific styles for edit modal */
+/* Форма для модального окна редактирования/создания */
 .edit-modal-content {
-  text-align: left; /* Align form content to the left */
+text-align: left; /* Для формы */
 }
 
 .edit-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+display: flex;
+flex-direction: column;
+gap: 15px;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
+display: flex;
+flex-direction: column;
 }
 
 .form-group label {
-  font-weight: 600;
-  margin-bottom: 5px;
+font-weight: 600;
+margin-bottom: 5px;
 }
 
 .form-input {
-  padding: 10px;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  font-size: 1rem;
-  color: var(--color-text);
-  background-color: var(--color-bg-white);
+padding: 10px;
+border: 1px solid var(--color-border);
+border-radius: 4px;
+font-size: 1rem;
+color: var(--color-text);
+background-color: var(--color-bg-white);
 }
 
 .form-input:focus {
-  border-color: #3b82f6; /* Blue focus color */
-  outline: none;
+border-color: #3b82f6;
+outline: none;
 }
 
 .char-limit-message {
-  font-size: 0.8rem;
-  color: #6b7280; /* Gray color */
-  margin-top: 5px;
-  margin-bottom: 0;
-  padding-left: 2px;
+font-size: 0.8rem;
+color: #6b7280;
+margin-top: 5px;
+margin-bottom: 0;
+padding-left: 2px;
 }
 
 .tag-display {
-  padding: 10px;
-  background-color: var(--color-bg-light);
-  border-radius: 4px;
-  font-size: 1rem;
-  color: var(--color-text);
+padding: 10px;
+background-color: var(--color-bg-light);
+border-radius: 4px;
+font-size: 1rem;
+color: var(--color-text);
 }
 
 .modal-title {
-  margin-top: 0;
-  font-size: 1.5rem;
-  color: var(--color-danger);
+margin-top: 0;
+font-size: 1.5rem;
+color: var(--color-text);
 }
 
 .modal-message {
-  font-size: 1.125rem;
-  margin-bottom: 24px;
+font-size: 1.125rem;
+margin-bottom: 24px;
 }
 
 .modal-actions {
-  display: flex;
-  justify-content: flex-end; /* Align buttons to the right in edit modal */
-  gap: 15px;
-  margin-top: 25px;
+display: flex;
+justify-content: flex-end; /* Для Edit/Create модальных окон */
+gap: 15px;
+margin-top: 25px;
+}
+
+/* Для ConfirmationModal, где кнопки центрированы */
+.modal-content:not(.edit-modal-content) .modal-actions {
+justify-content: center;
 }
 
 .modal-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: background-color 0.2s;
+padding: 10px 20px;
+border: none;
+border-radius: 6px;
+cursor: pointer;
+font-size: 1rem;
+font-weight: 600;
+transition: background-color 0.2s;
 }
 
-/* Styles for Save/Cancel buttons in Edit Modal */
+/* Стили для кнопок Save/Cancel в Edit/Create Modal */
 .save-button {
-  background-color: var(--color-save-btn); /* White color */
-  color: var(--color-save-text); /* Black/Dark text color */
-  border: 1px solid var(--color-border); /* Added light border */
+background-color: var(--color-save-btn);
+color: var(--color-save-text);
+border: 1px solid var(--color-border);
 }
 
 .save-button:hover {
-  background-color: var(--color-border);
+background-color: var(--color-border);
 }
 
 .cancel-button {
-  background-color: var(--color-cancel-btn); /* Gray color */
-  color: var(--color-text);
-  border: 1px solid var(--color-cancel-btn);
+background-color: var(--color-cancel-btn);
+color: var(--color-text);
+border: 1px solid var(--color-cancel-btn);
 }
 
 .cancel-button:hover {
-  background-color: #6b7280;
-  color: var(--color-bg-white);
+background-color: #6b7280;
+color: var(--color-bg-white);
 }
 
 .yes-button {
-  background-color: var(--color-confirm-bg); /* Green for 'Yes' */
-  color: var(--color-text);
+background-color: var(--color-confirm-bg);
+color: var(--color-text);
 }
 
 .yes-button:hover {
-  background-color: var(--color-confirm-hover);
+background-color: var(--color-confirm-hover);
 }
 
 .no-button {
-  background-color: var(--color-border); /* Light color for 'No' */
-  color: var(--color-text);
+background-color: var(--color-border);
+color: var(--color-text);
 }
 
 .no-button:hover {
-  background-color: var(--color-shadow);
+background-color: var(--color-shadow);
 }
