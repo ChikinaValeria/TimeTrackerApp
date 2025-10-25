@@ -241,13 +241,6 @@ font-weight: 500;
 text-transform: capitalize;
 }
 
-/* --- ИСПРАВЛЕНИЕ: СКРЫВАЕМ ТЕГ "NO TAGS" --- */
-.task-tag.no-tag {
-display: none; /* Скрываем элемент полностью, если логика его рендерит */
-}
-/* ------------------------------------------- */
-
-
 /* Контейнер для кнопок действий */
 .task-actions {
 display: flex;
@@ -287,6 +280,57 @@ color: var(--color-bg-white);
 
 .delete-button:hover {
 background-color: var(--color-danger-hover);
+}
+
+/* ------------------------------------------- */
+/* TagCard Стили (NEW SECTION) */
+/* ------------------------------------------- */
+
+.tags-list {
+display: flex;
+flex-direction: column;
+gap: 12px; /* Slightly tighter gap than tasks */
+margin-top: 16px;
+}
+
+/* Стили для визуального элемента Tag Card */
+.tag-card {
+/* Inherits basic styling from task-card's idea but with smaller padding (half the height) */
+background-color: var(--color-bg-white);
+padding: 10px 20px; /* Half the vertical padding of task-card (20px) */
+border-radius: 8px;
+box-shadow: 0 2px 4px 0 var(--color-shadow); /* Lighter shadow */
+border-left: 5px solid #3b82f6; /* Example color for tag cards */
+color: var(--color-text);
+display: flex;
+align-items: center;
+}
+
+.tag-content {
+flex-grow: 1;
+display: flex;
+align-items: baseline;
+gap: 15px; /* Spacing between name and ID */
+}
+
+.tag-name {
+font-size: 1.125rem; /* Slightly smaller font than task-name (1.25rem) */
+font-weight: 700;
+margin: 0;
+}
+
+.tag-id {
+font-size: 0.9rem;
+font-weight: 400;
+color: #6b7280; /* Gray color for ID */
+margin: 0;
+}
+
+.tag-additional-data {
+font-size: 0.9rem;
+font-weight: 400;
+color: var(--color-text);
+margin: 0 0 0 auto; /* Pushes additional data to the right */
 }
 
 /* ------------------------------------------- */
