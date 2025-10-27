@@ -1,4 +1,4 @@
-// App.jsx (MODIFIED: Added Active Status Check and Timestamp Posting)
+// App.jsx (MODIFIED: Added TaskActivitySummaryView)
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
@@ -8,6 +8,8 @@ import CreateTask from './CreateTask.jsx';
 import TagsView from './TagsView.jsx';
 import EditTask from './EditTask.jsx';
 import TagFilter from './TagFilter.jsx';
+// NEW: Import the summary view
+import TaskActivitySummaryView from './TaskActivitySummaryView.jsx';
 
 
 // API base URL
@@ -36,7 +38,7 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
 const viewData = [
     { path: '/tasks', name: 'Tasks', content: 'Tasks List', title: 'Tasks' },
     { path: '/tags', name: 'Tags', content: 'Available Tags', title: 'Available Tags' },
-    { path: '/task-activity-summary', name: 'Task activity summary', content: 'Task activity summary content', title: 'Task Activity Summary' },
+    { path: '/task-activity-summary', name: 'Task activity summary', content: 'Task activity summary content', title: 'Task Activity Summary' }, // UPDATED
     { path: '/tag-activity-summary', name: 'Tag activity summary', content: 'Tag activity summary content', title: 'Tag Activity Summary' },
     { path: '/info', name: 'Info', content: '', title: 'Information' },
 ];
@@ -493,7 +495,7 @@ const App = () => {
             });
 
             if (postResponse.ok) {
-                // Automatically update UI after successful Start/Stop
+                // Automatically update UI after successful Start/Stop (Requirement 2)
                 await fetchData();
             } else {
                 console.error(`Failed to post timestamp for task ${taskId}, type ${type}: ${postResponse.statusText}`);
@@ -519,6 +521,7 @@ const App = () => {
 
             if (postResponse.ok) {
                 const createdTag = await postResponse.json();
+                // Update available tags list immediately (Requirement 2)
                 setAvailableTags(prevTags => [...prevTags, createdTag]);
                 return createdTag;
             } else {
@@ -592,6 +595,12 @@ const App = () => {
                                         title={item.title}
                                         tasks={tasks}
                                         fetchTags={fetchData}
+                                    />;
+                                } else if (item.path === '/task-activity-summary') {
+                                    // NEW: Route for Task Activity Summary
+                                    element = <TaskActivitySummaryView
+                                        title={item.title}
+                                        tasks={tasks}
                                     />;
                                 } else if (item.path === '/info') {
                                     element = <InfoView />;
