@@ -48,6 +48,11 @@ background-color: var(--color-bg-light);
 background-color: var(--color-bg-white);
 }
 
+.task-card.is-active {
+    /* Dark theme: HSL(120, 30%, 20%) - Darker Pale Green */
+    background-color: hsl(120, 30%, 20%);
+}
+
 .save-button {
 color: var(--color-save-text); /* Ensure save button text is visible in dark mode */
 }
@@ -208,7 +213,7 @@ margin-top: 24px;
 }
 
 /* ------------------------------------------- */
-/* TaskCard Стили (MODIFIED for D&D VISUAL) */
+/* TaskCard Стили (MODIFIED for D&D VISUAL & ACTIVITY STATUS) */
 /* ------------------------------------------- */
 
 /* Стили для визуального элемента Task Card */
@@ -217,9 +222,9 @@ background-color: var(--color-bg-white);
 padding: 20px;
 border-radius: 8px;
 box-shadow: 0 4px 6px -1px var(--color-shadow); /* Тень */
-border-left: 5px solid hsl(60, 91%, 60%); /* Цветная левая граница */
+border-left: 5px solid hsl(60, 91%, 60%); /* Цветная левая граница (желтый по умолчанию) */
 color: var(--color-text);
-transition: opacity 0.2s; /* Added transition for smoother visual change */
+transition: background-color 0.3s, opacity 0.2s; /* Added transition for smoother visual change */
 
 /* Flexbox для расположения содержимого (контент слева, кнопки справа) */
 display: flex;
@@ -228,6 +233,14 @@ align-items: center;
 
 /* D&D: Set cursor to indicate draggable */
 cursor: grab;
+}
+
+/* Active Task Card Style (Pale Green) */
+.task-card.is-active {
+    /* Pale green color, using HSL for easy adjustment in light/dark themes */
+    /* Light theme: HSL(120, 50%, 90%) - Pale Green */
+    background-color: hsl(120, 50%, 90%);
+    border-left: 5px solid hsl(120, 70%, 50%); /* Stronger green border */
 }
 
 /* D&D: Change cursor when dragging starts */
@@ -242,6 +255,29 @@ cursor: grab;
     border: 2px dashed #9ca3af; /* Add a dashed border to mark it */
     border-left: 5px solid #9ca3af; /* Change border color too */
 }
+
+/* NEW: Status indicator plaque */
+.task-status-plaque {
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    /* Увеличенный отступ слева для отделения от названия */
+    margin-left: 15px;
+    flex-shrink: 0;
+}
+
+.status-active {
+    background-color: #22c55e; /* Bright Green */
+    color: var(--color-bg-white);
+}
+
+.status-inactive {
+    background-color: var(--color-cancel-btn); /* Gray (using existing var) */
+    color: var(--color-bg-white);
+}
+
 
 /* Контейнер для имени и тегов, чтобы сгруппировать их */
 .task-content {
@@ -295,7 +331,9 @@ align-items: center;
 
 /* Базовые стили для кнопок действий */
 .edit-button,
-.delete-button {
+.delete-button,
+.start-button, /* NEW */
+.stop-button { /* NEW */
 border: none;
 padding: 10px 18px;
 border-radius: 8px;
@@ -325,6 +363,26 @@ color: var(--color-bg-white);
 .delete-button:hover {
 background-color: var(--color-danger-hover);
 }
+
+/* NEW: Start/Stop buttons */
+.start-button {
+    background-color: #22c55e; /* Bright Green */
+    color: var(--color-bg-white);
+}
+
+.start-button:hover {
+    background-color: #16a34a; /* Darker Green */
+}
+
+.stop-button {
+    background-color: #f87171; /* Pale Red/Orange */
+    color: var(--color-bg-white);
+}
+
+.stop-button:hover {
+    background-color: #ef4444; /* Strong Red */
+}
+
 
 /* ------------------------------------------- */
 /* TagCard Стили */
@@ -720,7 +778,6 @@ background-color: var(--color-shadow);
     color: var(--color-text);
     padding: 6px 12px;
     border-radius: 9999px; /* Pill shape */
-    font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s;
 }

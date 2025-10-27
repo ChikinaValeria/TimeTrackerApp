@@ -1,7 +1,7 @@
 // TaskCard.jsx
 // Component that displays a single task element and includes Drag and Drop handlers.
 
-import React, { useState } from 'react'; // NEW: Import useState
+import React, { useState } from 'react';
 
 // TaskCard component displays a single task element.
 const TaskCard = ({
@@ -14,13 +14,26 @@ const TaskCard = ({
     is_active,
     onDeleteRequest,
     onEditRequest,
+    onStartStopRequest,
     onDragStart,
     onDragEnter,
     onDrop,
     onDragOver,
 }) => {
-    // NEW: State to track if this specific card is the one being dragged
+    // State to track if this specific card is the one being dragged
     const [isDragging, setIsDragging] = useState(false);
+
+    // Determines the appropriate status plaque text and class
+    const statusText = is_active ? 'Active' : 'Inactive';
+    const statusClass = is_active ? 'status-active' : 'status-inactive';
+
+    // Handler for the Start/Stop button click
+    const handleStartStopClick = () => {
+        // Determine the action type: 0 for Start (Activate), 1 for Stop (Deactivate)
+        const type = is_active ? 1 : 0;
+        // Call the parent handler with the task ID and the action type
+        onStartStopRequest(id, type);
+    };
 
     // Handler for starting drag. Sets the task ID in dataTransfer.
     const handleDragStart = (e) => {
@@ -59,19 +72,23 @@ const TaskCard = ({
 
     return (
         <div
-            // Apply the new class if currently dragging
-            className={`task-card ${isDragging ? 'is-dragging-source' : ''}`}
+            // Apply class for dragging source and for active status
+            className={`task-card ${isDragging ? 'is-dragging-source' : ''} ${is_active ? 'is-active' : ''}`}
             // Drag and Drop Attributes and Handlers
             draggable="true"
             onDragStart={handleDragStart}
             onDragEnter={handleDragEnter}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd} // Use the new handler
+            onDragEnd={handleDragEnd}
         >
-            {/* ... (Task Card content remains unchanged) ... */}
             <div className="task-content">
-                <h3 className="task-name">{name} (ID: {id})</h3>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                    <h3 className="task-name">{name}</h3>
+                    <span className={`task-status-plaque ${statusClass}`}>
+                        {statusText}
+                    </span>
+                </div>
                 <p className="additional-data">{additional_data}</p>
                 <div className="task-tags">
                     {tagNames.map((tagName, index) => (
@@ -80,6 +97,22 @@ const TaskCard = ({
                 </div>
             </div>
             <div className="task-actions">
+                {is_active ? (
+                    <button
+                        className="stop-button"
+                        onClick={handleStartStopClick}
+                    >
+                        Stop
+                    </button>
+                ) : (
+                    <button
+                        className="start-button"
+                        onClick={handleStartStopClick}
+                    >
+                        Start
+                    </button>
+                )}
+
                 <button
                     className="edit-button"
                     onClick={() => onEditRequest({ id, name, description, tags, additional_data, is_active })}
