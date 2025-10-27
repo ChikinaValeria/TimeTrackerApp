@@ -851,3 +851,116 @@ background-color: var(--color-shadow);
     margin-top: 0;
     margin-bottom: 15px;
 }
+
+/* ================================================= */
+/* АДАПТИВНОСТЬ (RESPONSIVENESS) ДЛЯ ЭКРАНОВ МЕНЕЕ 600PX */
+/* ================================================= */
+
+@media (max-width: 600px) {
+    /* 1.3: На основном вью не видна последняя вью Инфо (шапка) */
+    .app-wrapper {
+        padding: 20px 10px; /* Less padding on small screens */
+    }
+
+    .main-container {
+        padding: 20px 15px; /* Less internal padding */
+    }
+
+    /* Make nav links stack or scroll horizontally */
+    .nav-list {
+        flex-wrap: nowrap; /* Prevent wrapping */
+        overflow-x: auto; /* Allow horizontal scrolling */
+        padding-bottom: 5px; /* Add space for scrollbar if needed */
+        margin-bottom: -5px; /* Offset the padding-bottom above */
+    }
+
+    .nav-link {
+        flex-shrink: 0; /* Prevent links from shrinking too much */
+        font-size: 1rem;
+        padding: 8px 12px;
+    }
+
+
+    /* 1.1: На вью Таскс кнопки съезжают с карточки таски */
+    .task-card {
+        flex-direction: column; /* Stack content and actions vertically */
+        align-items: flex-start; /* Align all items to the start */
+        padding: 15px; /* Slightly less padding */
+    }
+
+    .task-content {
+        width: 100%; /* Content takes full width */
+        padding-right: 0;
+        margin-bottom: 15px; /* Space between content and buttons */
+    }
+
+    .task-tags {
+        margin-top: 10px; /* Ensure space below description */
+    }
+
+    .task-actions {
+        width: 100%; /* Actions take full width */
+        flex-wrap: wrap; /* Allow buttons to wrap if necessary */
+        justify-content: space-between; /* Space out buttons */
+    }
+
+    /* Make buttons take up space more effectively, maybe 4 per row or full width */
+    .task-actions .edit-button,
+    .task-actions .delete-button,
+    .task-actions .start-button,
+    .task-actions .stop-button {
+        flex-basis: calc(50% - 4px); /* Two buttons per row */
+        padding: 8px 10px;
+        text-align: center;
+        font-size: 0.9rem;
+        margin-top: 5px; /* Add small vertical gap if they wrap */
+    }
+
+    /* 1.4: На втю тегс кнопки съезжают с карточки тега */
+    .tag-card {
+        flex-direction: column; /* Stack content and actions vertically */
+        align-items: flex-start;
+        padding: 15px;
+    }
+
+    .tag-content {
+        width: 100%;
+        padding-right: 0;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+    }
+
+    .tag-actions {
+        width: 100%;
+        justify-content: flex-end; /* Keep buttons to the right/end */
+    }
+
+    /* 1.2, 1.5: Диалоговые окна не влезают в экран */
+    .modal-content {
+        max-width: 95%; /* Use almost full width */
+        width: 95%;
+        margin: 0 10px; /* Ensure margin from screen edges */
+        padding: 20px; /* Reduced padding */
+    }
+
+    .edit-form {
+        gap: 10px; /* Reduce gap in form */
+    }
+
+    .new-tag-fields {
+        flex-direction: column; /* Stack name and data fields vertically */
+        gap: 10px;
+    }
+
+    /* Ensure action buttons in modals flow better */
+    .modal-actions {
+        flex-direction: column; /* Stack save/cancel buttons vertically */
+        gap: 10px;
+    }
+
+    .modal-button {
+        width: 100%;
+        padding: 10px 15px;
+    }
+    /* End of @media (max-width: 600px) */
+}
