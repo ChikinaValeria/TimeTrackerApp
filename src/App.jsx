@@ -1,4 +1,4 @@
-// App.jsx (MODIFIED: Added TaskActivitySummaryView)
+// App.jsx (MODIFIED: Added TagActivitySummaryView)
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
@@ -8,8 +8,10 @@ import CreateTask from './CreateTask.jsx';
 import TagsView from './TagsView.jsx';
 import EditTask from './EditTask.jsx';
 import TagFilter from './TagFilter.jsx';
-// NEW: Import the summary view
+
+// NEW IMPORTS: Import TagActivitySummaryView
 import TaskActivitySummaryView from './TaskActivitySummaryView.jsx';
+import TagActivitySummaryView from './TagActivitySummaryView.jsx'; // <--- NEW IMPORT
 
 
 // API base URL
@@ -35,11 +37,12 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
 // --- End Confirmation Modal Component ---
 
 
+// UPDATED: Added the new view to the navigation data array.
 const viewData = [
     { path: '/tasks', name: 'Tasks', content: 'Tasks List', title: 'Tasks' },
     { path: '/tags', name: 'Tags', content: 'Available Tags', title: 'Available Tags' },
-    { path: '/task-activity-summary', name: 'Task activity summary', content: 'Task activity summary content', title: 'Task Activity Summary' }, // UPDATED
-    { path: '/tag-activity-summary', name: 'Tag activity summary', content: 'Tag activity summary content', title: 'Tag Activity Summary' },
+    { path: '/task-activity-summary', name: 'Task activity summary', content: 'Task activity summary content', title: 'Task Activity Summary' },
+    { path: '/tag-activity-summary', name: 'Tag activity summary', content: 'Tag activity summary content', title: 'Tag Activity Summary' }, // <--- NEW ENTRY
     { path: '/info', name: 'Info', content: '', title: 'Information' },
 ];
 
@@ -597,10 +600,18 @@ const App = () => {
                                         fetchTags={fetchData}
                                     />;
                                 } else if (item.path === '/task-activity-summary') {
-                                    // NEW: Route for Task Activity Summary
+                                    // Route for Task Activity Summary
                                     element = <TaskActivitySummaryView
                                         title={item.title}
                                         tasks={tasks}
+                                    />;
+                                } else if (item.path === '/tag-activity-summary') {
+                                    // <--- NEW ROUTE MAPPING
+                                    element = <TagActivitySummaryView
+                                        title={item.title}
+                                        // TagActivitySummaryView will contain its own data fetching logic
+                                        // as requested in the previous step (to keep the structure simple).
+                                        // If it needed App's centralized data, we'd pass 'fetchData', 'tasks', etc.
                                     />;
                                 } else if (item.path === '/info') {
                                     element = <InfoView />;

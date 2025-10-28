@@ -144,6 +144,7 @@ const TaskActivitySummaryView = ({ title, tasks }) => {
                         value={startTime}
                         onChange={(e) => setStartTime(e.target.value)}
                         required
+                        step="1"
                     />
                 </div>
                 <div className="form-group">
@@ -155,9 +156,14 @@ const TaskActivitySummaryView = ({ title, tasks }) => {
                         value={endTime}
                         onChange={(e) => setEndTime(e.target.value)}
                         required
+                        step="1"
                     />
                 </div>
-                <button type="submit" className="add-task-button" style={{marginTop: '15px'}} disabled={isLoading}>
+                <button
+                    type="submit"
+                    className="generate-summary-button"
+                    disabled={isLoading}
+                >
                     {isLoading ? 'Calculating...' : 'Recalculate Summary'}
                 </button>
             </form>
