@@ -219,21 +219,27 @@ margin-top: 24px;
 
 /* Стили для визуального элемента Task Card */
 .task-card {
-background-color: var(--color-bg-white);
-padding: 20px;
-border-radius: 8px;
-box-shadow: 0 4px 6px -1px var(--color-shadow); /* Тень */
-border-left: 5px solid hsl(60, 91%, 60%); /* Цветная левая граница (желтый по умолчанию) */
-color: var(--color-text);
-transition: background-color 0.3s, opacity 0.2s; /* Added transition for smoother visual change */
+    background-color: var(--color-bg-white);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px var(--color-shadow); /* Тень */
+    border-left: 5px solid hsl(60, 91%, 60%); /* Цветная левая граница (желтый по умолчанию) */
+    color: var(--color-text);
+    transition: background-color 0.3s, opacity 0.2s; /* Added transition for smoother visual change */
 
-/* Flexbox для расположения содержимого (контент слева, кнопки справа) */
-display: flex;
-justify-content: space-between;
-align-items: center;
+    /* Flexbox для расположения содержимого (контент слева, кнопки справа) */
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Changed from center to handle wrapping better */
+    flex-wrap: nowrap; /* Prevent overall wrapping by default */
+    gap: 16px; /* Add gap between content and actions */
 
-/* D&D: Set cursor to indicate draggable */
-cursor: grab;
+    /* D&D: Set cursor to indicate draggable */
+    cursor: grab;
+
+    /* Ensure card fits in viewport */
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 /* Active Task Card Style (Pale Green) */
@@ -282,17 +288,22 @@ cursor: grab;
 
 /* Контейнер для имени и тегов, чтобы сгруппировать их */
 .task-content {
-flex-grow: 1; /* Позволяет контенту занять большую часть пространства */
-padding-right: 15px; /* Небольшой отступ перед кнопками */
+    flex: 1 1 auto; /* grow | shrink | basis */
+    min-width: 0; /* Allow content to shrink below its preferred width */
+    max-width: calc(100% - 120px); /* Reserve space for buttons (~120px) */
+    padding-right: 0; /* Remove padding since we use gap */
 }
 
 .task-name {
-font-size: 1.25rem;
-font-weight: 700;
-margin-top: 0;
-margin-bottom: 5px;
-color: var(--color-text);
-word-wrap: break-word;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: var(--color-text);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 /* Стили для Additional Data */
@@ -324,10 +335,12 @@ text-transform: capitalize;
 
 /* Контейнер для кнопок действий */
 .task-actions {
-display: flex;
-flex-shrink: 0;
-gap: 8px;
-align-items: center;
+    display: flex;
+    flex: 0 0 auto; /* Don't grow, don't shrink, auto basis */
+    gap: 8px;
+    align-items: center;
+    flex-wrap: nowrap; /* Keep buttons in a row */
+    min-width: fit-content; /* Ensure buttons don't compress too much */
 }
 
 /* Базовые стили для кнопок действий */
@@ -472,14 +485,16 @@ z-index: 1000;
 }
 
 .modal-content {
-background-color: var(--color-bg-white);
-padding: 30px;
-border-radius: 12px;
-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-max-width: 400px;
-width: 90%;
-color: var(--color-text);
-text-align: center; /* Для ConfirmationModal */
+    background-color: var(--color-bg-white);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
+    color: var(--color-text);
+    text-align: center; /* Для ConfirmationModal */
+    box-sizing: border-box; /* Include padding in width calculation */
+    overflow: hidden; /* Prevent content overflow */
 }
 
 /* Форма для модального окна редактирования/создания */
@@ -494,8 +509,10 @@ gap: 15px;
 }
 
 .form-group {
-display: flex;
-flex-direction: column;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 10px;
 }
 
 .form-group label {
@@ -504,12 +521,15 @@ margin-bottom: 5px;
 }
 
 .form-input {
-padding: 10px;
-border: 1px solid var(--color-border);
-border-radius: 4px;
-font-size: 1rem;
-color: var(--color-text);
-background-color: var(--color-bg-white);
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 1rem;
+    color: var(--color-text);
+    background-color: var(--color-bg-white);
+    width: 100%;
+    box-sizing: border-box; /* Include padding in width */
+    max-width: 100%; /* Prevent overflow */
 }
 
 .form-input:focus {
@@ -540,8 +560,13 @@ color: var(--color-text);
 }
 
 .modal-message {
-font-size: 1.125rem;
-margin-bottom: 24px;
+    font-size: 1.125rem;
+    margin-bottom: 24px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    max-width: 100%;
 }
 
 .modal-actions {
@@ -989,15 +1014,16 @@ background-color: var(--color-shadow);
 
     /* 1.1: На вью Таскс кнопки съезжают с карточки таски */
     .task-card {
-        flex-direction: column; /* Stack content and actions vertically */
-        align-items: flex-start; /* Align all items to the start */
-        padding: 15px; /* Slightly less padding */
+        flex-direction: column;
+        align-items: stretch;
+        padding: 15px;
+        gap: 12px;
     }
 
     .task-content {
-        width: 100%; /* Content takes full width */
-        padding-right: 0;
-        margin-bottom: 15px; /* Space between content and buttons */
+        width: 100%;
+        max-width: 100%; /* Allow full width on mobile */
+        margin-bottom: 0; /* Use gap instead */
     }
 
     .task-tags {

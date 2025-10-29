@@ -52,12 +52,14 @@ const CreateTask = ({ isOpen, onCreate, onCancel, availableTags, postNewTag }) =
             return;
         }
 
+        // Create task object. We default to not including an active timestamp here;
+        // the App/parent will ensure tasks are created inactive on the server.
         const newTask = {
             name: taskName,
             description: taskDescription,
             additional_data: taskAdditionalData,
             tags: assignedTagIds, // Use the updated tags string
-            is_active: true, // Defaulting to active
+            is_active: false, // Ensure new tasks default to inactive
         };
 
         // Call parent function (TasksView's handleConfirmCreate).

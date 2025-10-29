@@ -208,6 +208,31 @@ const TasksView = ({
             });
 
             if (postResponse.ok) {
+                // Try to read created task from response (if server returns it)
+                let createdTask = null;
+                try {
+                    createdTask = await postResponse.json();
+                } catch (err) {
+                    // If server doesn't return JSON, ignore
+                    console.debug('No JSON body returned from POST /tasks');
+                }
+
+                // Debugging: fetch timestamps for the newly created task (if we have an id)
+                // This helps determine whether the server is auto-creating timestamps on task creation.
+                if (createdTask && createdTask.id) {
+                    try {
+                        const tsResp = await fetch(`${API_URL}/timesfortask/${createdTask.id}`);
+                        if (tsResp.ok) {
+                            const tsData = await tsResp.json();
+                            console.debug('Timestamps for newly created task:', createdTask.id, tsData);
+                        } else {
+                            console.debug('Failed to fetch timestamps for created task', createdTask.id, tsResp.status);
+                        }
+                    } catch (err) {
+                        console.error('Error fetching timestamps for created task:', err);
+                    }
+                }
+
                 await fetchData();
             } else {
                 console.error(`Failed to create task: ${postResponse.statusText}`);
