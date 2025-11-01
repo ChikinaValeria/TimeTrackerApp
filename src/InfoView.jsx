@@ -10,7 +10,7 @@ const InfoView = () => {
       Using the application should be intuitive and straightforward.
     </p>
     <p className="view-text">
-      All the content used in this application is originally created by author.
+      All the content used in this application is originally created by author. AI tool was used to comment the application code properly.
     </p>
   </div>
  );

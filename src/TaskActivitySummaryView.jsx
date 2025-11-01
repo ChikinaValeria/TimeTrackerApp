@@ -1,4 +1,3 @@
-// TaskActivitySummaryView.jsx
 // Component for viewing the active time summary of tasks over a specific time interval.
 
 import React, { useState, useEffect, useCallback } from 'react';

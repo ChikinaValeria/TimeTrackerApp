@@ -1,9 +1,7 @@
-// TagsView.jsx
-
 import React, { useState, useEffect, useCallback } from 'react';
 import TagCard from './TagCard.jsx';
 import CreateTag from './CreateTag.jsx';
-import EditTag from './EditTag.jsx'; // NEW: Import EditTag component
+import EditTag from './EditTag.jsx'; 
 
 import { useFocusTrap } from './useFocusTrap.js';
 // --- Confirmation Modal Component (Redefined for TagsView Scope) ---

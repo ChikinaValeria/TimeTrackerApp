@@ -1,4 +1,3 @@
-// CreateTag.jsx
 // Function component for the modal form used to create a new tag.
 
 import React, { useState, useEffect } from 'react';

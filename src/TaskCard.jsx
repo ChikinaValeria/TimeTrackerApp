@@ -1,4 +1,3 @@
-// TaskCard.jsx
 // Component that displays a single task element and includes Drag and Drop handlers.
 
 import React, { useState } from 'react';

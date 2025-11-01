@@ -1,4 +1,3 @@
-// TagFilter.jsx
 import React from 'react';
 
 // TagFilter component displays available tags and allows users to select tags for filtering.

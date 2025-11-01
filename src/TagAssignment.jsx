@@ -1,4 +1,3 @@
-// TagAssignment.jsx
 import React, { useState, useEffect } from 'react';
 
 const MAX_LENGTH = 20;

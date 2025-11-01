@@ -1,5 +1,3 @@
-// App.jsx (MODIFIED: Added TagActivitySummaryView)
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import TaskCard from './TaskCard.jsx';

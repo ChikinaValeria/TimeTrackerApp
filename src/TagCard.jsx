@@ -1,5 +1,3 @@
-// TagCard.jsx
-
 // TagCard component, displays a single tag item with its details.
 // Implemented as a simple Function Component.
 const TagCard = ({ id, name, additional_data, onDeleteRequest, onEditRequest }) => { // NEW: Added onEditRequest

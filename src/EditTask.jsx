@@ -1,4 +1,3 @@
-// EditTask.jsx
 // Component for the modal form used to edit an existing task.
 // FIX for "white screen" issue by moving it out of App.jsx and fixing logic.
 

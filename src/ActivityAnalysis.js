@@ -1,4 +1,3 @@
-// ActivityAnalysis.js
 // Utility functions for calculating active time of tasks.
 
 /**

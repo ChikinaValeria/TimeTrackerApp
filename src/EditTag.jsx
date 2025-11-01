@@ -1,4 +1,3 @@
-// EditTag.jsx
 // Function component for the modal form used to edit an existing tag.
 
 import React, { useState, useEffect } from 'react';

@@ -2,8 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 
 const API_BASE_URL = 'http://127.0.0.1:3010';
 
-// --- UTILITY FUNCTIONS & COMPONENTS (MOVED INLINE) ---
-
 /**
  * Custom hook to fetch all necessary data from the API.
  * @returns {object} Contains loading status and fetched data (tasks, tags, timestamps).

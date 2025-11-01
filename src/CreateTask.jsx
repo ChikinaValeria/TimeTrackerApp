@@ -1,5 +1,3 @@
-// CreateTask.jsx (Modified: Integration of TagAssignment and fixed handleSubmit logic)
-
 import React, { useState } from 'react';
 import { useFocusTrap } from './useFocusTrap.js';
 import TagAssignment from './TagAssignment.jsx'; // Import the new component
