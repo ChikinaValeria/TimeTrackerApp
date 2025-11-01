@@ -12,6 +12,7 @@ import TagFilter from './TagFilter.jsx';
 // NEW IMPORTS: Import TagActivitySummaryView
 import TaskActivitySummaryView from './TaskActivitySummaryView.jsx';
 import TagActivitySummaryView from './TagActivitySummaryView.jsx'; // <--- NEW IMPORT
+import TaskActivityChart from './TaskActivityChart.jsx'; // <--- NEW: chart view
 
 
 // API base URL
@@ -41,6 +42,7 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
 const viewData = [
     { path: '/tasks', name: 'Tasks', content: 'Tasks List', title: 'Tasks' },
     { path: '/tags', name: 'Tags', content: 'Available Tags', title: 'Available Tags' },
+    { path: '/task-activity-chart', name: 'Task activity chart', content: 'Task activity chart', title: 'Task Activity Chart' },
     { path: '/task-activity-summary', name: 'Task activity summary', content: 'Task activity summary content', title: 'Task Activity Summary' },
     { path: '/tag-activity-summary', name: 'Tag activity summary', content: 'Tag activity summary content', title: 'Tag Activity Summary' }, // <--- NEW ENTRY
     { path: '/info', name: 'Info', content: '', title: 'Information' },
@@ -623,6 +625,11 @@ const App = () => {
                                         title={item.title}
                                         tasks={tasks}
                                         fetchTags={fetchData}
+                                    />;
+                                } else if (item.path === '/task-activity-chart') {
+                                    element = <TaskActivityChart
+                                        title={item.title}
+                                        tasks={tasks}
                                     />;
                                 } else if (item.path === '/task-activity-summary') {
                                     // Route for Task Activity Summary
