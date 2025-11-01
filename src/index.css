@@ -187,18 +187,29 @@ color: var(--color-text);
 .add-task-button {
 background-color: var(--color-add-btn); /* Ярко-зеленый */
 color: var(--color-bg-white);
-border: none;
+border: 2px solid var(--color-add-btn);
 padding: 10px 18px;
 border-radius: 9999px; /* Полностью скругленные углы */
 cursor: pointer;
 font-size: 1rem;
 font-weight: 600;
-transition: background-color 0.2s;
+transition: all 0.2s ease;
 flex-shrink: 0;
+position: relative;
+outline: none;
 }
 
 .add-task-button:hover {
 background-color: var(--color-add-btn-hover);
+border-color: var(--color-add-btn-hover);
+}
+
+@media (forced-colors: active) {
+    .add-task-button {
+        border: 2px solid currentColor;
+        -ms-high-contrast-adjust: none;
+        forced-color-adjust: none;
+    }
 }
 
 .view-text {
@@ -346,16 +357,40 @@ text-transform: capitalize;
 /* Базовые стили для кнопок действий */
 .edit-button,
 .delete-button,
-.start-button, /* NEW */
-.stop-button { /* NEW */
-border: none;
-padding: 10px 18px;
-border-radius: 8px;
-cursor: pointer;
-font-size: 1rem;
-font-weight: 600;
-transition: background-color 0.2s;
-flex-shrink: 0;
+.start-button,
+.stop-button {
+    border: 2px solid transparent; /* visible border by default but transparent to preserve color blocks */
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    outline: none;
+    position: relative;
+}
+
+/* Focus styles for keyboard users */
+.edit-button:focus,
+.delete-button:focus,
+.start-button:focus,
+.stop-button:focus {
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.45);
+    outline: 2px solid #000;
+    outline-offset: 2px;
+}
+
+/* Ensure visible borders in forced-colors/high-contrast mode */
+@media (forced-colors: active) {
+    .edit-button,
+    .delete-button,
+    .start-button,
+    .stop-button {
+        border: 2px solid currentColor;
+        -ms-high-contrast-adjust: none;
+        forced-color-adjust: none;
+    }
 }
 
 /* Стили для кнопки Edit (Оранжевый) */
@@ -480,8 +515,10 @@ height: 100%;
 background-color: rgba(0, 0, 0, 0.5);
 display: flex;
 justify-content: center;
-align-items: center;
+align-items: flex-start; /* allow modals to start near top so they can scroll */
 z-index: 1000;
+overflow-y: auto; /* Enable scrolling when viewport is small or zoomed */
+padding: 20px 0; /* breathing room at top/bottom */
 }
 
 .modal-content {
@@ -494,7 +531,10 @@ z-index: 1000;
     color: var(--color-text);
     text-align: center; /* Для ConfirmationModal */
     box-sizing: border-box; /* Include padding in width calculation */
-    overflow: hidden; /* Prevent content overflow */
+    margin: auto; /* center when there is spare space */
+    max-height: 100%; /* never exceed viewport height */
+    overflow-y: auto; /* allow scrolling inside modal when its content is long */
+    position: relative; /* for any pseudo-elements or outlines */
 }
 
 /* Форма для модального окна редактирования/создания */
@@ -543,6 +583,64 @@ color: #6b7280;
 margin-top: 5px;
 margin-bottom: 0;
 padding-left: 2px;
+}
+
+/* Placeholders and helper text: only adjust for contrast modes so normal view is untouched */
+@media (forced-colors: active) {
+    input::placeholder,
+    textarea::placeholder,
+    .form-input::placeholder,
+    .char-limit-message,
+    .no-tags-message,
+    .or-separator,
+    .tag-id,
+    .modal-message,
+    .tag-display {
+        color: GrayText;
+        forced-color-adjust: none;
+    }
+
+    /* Make modal boundaries extra-clear in forced-colors/high-contrast mode */
+    .modal-content {
+        border: 4px solid currentColor;
+        background: Canvas; /* use system canvas color to ensure contrast */
+        box-shadow: none; /* rely on border/outline instead of shadow */
+        forced-color-adjust: none;
+        outline: 3px solid ButtonText;
+        outline-offset: -4px;
+    }
+
+    /* Add an extra outer ring to separate modal from backdrop */
+    .modal-content::before {
+        content: "";
+        position: absolute;
+        inset: -8px;
+        border: 2px solid currentColor;
+        border-radius: 16px;
+        pointer-events: none;
+        forced-color-adjust: none;
+    }
+
+    /* Ensure active task cards are highlighted in forced-colors (high-contrast) */
+    .task-card.is-active {
+        background: Highlight; /* system highlight color */
+        color: HighlightText;  /* readable text on highlight */
+        border-left-color: HighlightText;
+        forced-color-adjust: none;
+    }
+}
+
+@media (prefers-contrast: more) {
+    input::placeholder,
+    textarea::placeholder,
+    .form-input::placeholder,
+    .char-limit-message,
+    .no-tags-message,
+    .or-separator,
+    .tag-id {
+        color: #cbd5e1; /* slightly lighter helper text for users preferring more contrast */
+        opacity: 1;
+    }
 }
 
 .tag-display {
@@ -595,22 +693,49 @@ transition: background-color 0.2s;
 .save-button {
 background-color: var(--color-save-btn);
 color: var(--color-save-text);
-border: 1px solid var(--color-border);
+border: 2px solid var(--color-border);
+position: relative;
+outline: none;
 }
 
 .save-button:hover {
 background-color: var(--color-border);
+border-color: var(--color-text);
+}
+
+.save-button:focus {
+    box-shadow: 0 0 0 3px rgba(156,163,175,0.45);
+    outline: 2px solid #000;
+    outline-offset: 2px;
 }
 
 .cancel-button {
 background-color: var(--color-cancel-btn);
 color: var(--color-text);
-border: 1px solid var(--color-cancel-btn);
+border: 2px solid var(--color-cancel-btn);
+position: relative;
+outline: none;
 }
 
 .cancel-button:hover {
 background-color: #6b7280;
 color: var(--color-bg-white);
+border-color: #4b5563;
+}
+
+.cancel-button:focus {
+    box-shadow: 0 0 0 3px rgba(156,163,175,0.45);
+    outline: 2px solid #000;
+    outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+    .save-button,
+    .cancel-button {
+        border: 2px solid currentColor;
+        -ms-high-contrast-adjust: none;
+        forced-color-adjust: none;
+    }
 }
 
 .yes-button {
@@ -943,19 +1068,36 @@ background-color: var(--color-shadow);
 .generate-summary-button {
     background-color: #3b82f6; /* Blue, similar to 'Add Tag' button */
     color: var(--color-bg-white);
-    border: none;
+    border: 2px solid #3b82f6;
     padding: 10px 20px;
     border-radius: 6px;
     cursor: pointer;
     font-size: 1rem;
     font-weight: 600;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
     width: auto; /* Allow button to size naturally */
     align-self: flex-start; /* Align button to the left/start */
+    position: relative;
+    outline: none;
 }
 
 .generate-summary-button:hover:not(:disabled) {
     background-color: #2563eb;
+    border-color: #2563eb;
+}
+
+.generate-summary-button:focus {
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.45);
+    outline: 2px solid #000;
+    outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+    .generate-summary-button {
+        border: 2px solid currentColor;
+        -ms-high-contrast-adjust: none;
+        forced-color-adjust: none;
+    }
 }
 
 .generate-summary-button:disabled {
