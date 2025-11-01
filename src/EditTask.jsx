@@ -3,6 +3,7 @@
 // FIX for "white screen" issue by moving it out of App.jsx and fixing logic.
 
 import React, { useState, useEffect } from 'react';
+import { useFocusTrap } from './useFocusTrap.js';
 import TagAssignment from './TagAssignment.jsx'; // Import TagAssignment
 
 const MAX_TASK_LENGTH = 40;
@@ -27,6 +28,8 @@ const EditTask = ({ isOpen, taskData, onSave, onCancel, availableTags, postNewTa
         }
     }, [taskData]);
 
+
+    const modalRef = useFocusTrap(isOpen && !!taskData);
     if (!isOpen || !taskData) return null;
 
     // Handler for Task Name input with length check
@@ -69,10 +72,9 @@ const EditTask = ({ isOpen, taskData, onSave, onCancel, availableTags, postNewTa
 
     return (
         <div className="modal-backdrop">
-            <div className="modal-content edit-modal-content">
+            <div className="modal-content edit-modal-content" ref={modalRef}>
                 <h3 className="modal-title">Edit Task: {taskData.id}</h3>
                 <form className="edit-form" onSubmit={handleSave}>
-
                     {/* Task Name Field */}
                     <div className="form-group">
                         <label htmlFor="taskName">Task Name:</label>
@@ -87,7 +89,6 @@ const EditTask = ({ isOpen, taskData, onSave, onCancel, availableTags, postNewTa
                         />
                         <p className="char-limit-message">Max length: {MAX_TASK_LENGTH} characters.</p>
                     </div>
-
                     {/* Additional Data Field */}
                     <div className="form-group">
                         <label htmlFor="additionalData">Additional Data:</label>
@@ -101,15 +102,13 @@ const EditTask = ({ isOpen, taskData, onSave, onCancel, availableTags, postNewTa
                         />
                         <p className="char-limit-message">Max length: {MAX_TASK_LENGTH} characters.</p>
                     </div>
-
                     {/* Tag Assignment Component */}
                     <TagAssignment
                         initialTagIds={taskData.tags}
                         availableTags={availableTags}
-                        onTagsChange={setCurrentTagIds} // Update the local state for tags
-                        onNewTagCreate={postNewTag}     // Pass the centralized POST function
+                        onTagsChange={setCurrentTagIds}
+                        onNewTagCreate={postNewTag}
                     />
-
                     <div className="modal-actions">
                         <button type="submit" className="modal-button save-button">Save</button>
                         <button type="button" className="modal-button cancel-button" onClick={onCancel}>Cancel</button>

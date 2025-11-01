@@ -2,6 +2,7 @@
 // Function component for the modal form used to edit an existing tag.
 
 import React, { useState, useEffect } from 'react';
+import { useFocusTrap } from './useFocusTrap.js';
 
 // The EditTag component acts as a modal, displaying the form fields pre-filled.
 const EditTag = ({ isOpen, tagData, onSave, onCancel }) => {
@@ -20,6 +21,8 @@ const EditTag = ({ isOpen, tagData, onSave, onCancel }) => {
         }
     }, [tagData]); // Dependency on tagData ensures state is synced when it changes
 
+
+    const modalRef = useFocusTrap(isOpen && !!tagData);
     if (!isOpen || !tagData) return null;
 
     // Handler for Tag Name input with length check (max 20 chars)
@@ -61,10 +64,9 @@ const EditTag = ({ isOpen, tagData, onSave, onCancel }) => {
 
     return (
         <div className="modal-backdrop">
-            <div className="modal-content edit-modal-content">
+            <div className="modal-content edit-modal-content" ref={modalRef}>
                 <h3 className="modal-title">Edit Tag: {tagData.id}</h3>
                 <form className="edit-form" onSubmit={handleSave}>
-
                     {/* Tag Name Field */}
                     <div className="form-group">
                         <label htmlFor="editTagName">Tag Name:</label>
@@ -74,12 +76,11 @@ const EditTag = ({ isOpen, tagData, onSave, onCancel }) => {
                             value={tagName}
                             onChange={handleNameChange}
                             className="form-input"
-                            maxLength={MAX_LENGTH} // HTML-based max length
+                            maxLength={MAX_LENGTH}
                             required
                         />
                         <p className="char-limit-message">Max length: {MAX_LENGTH} characters.</p>
                     </div>
-
                     {/* Additional Data Field */}
                     <div className="form-group">
                         <label htmlFor="editAdditionalData">Additional Data:</label>
@@ -89,11 +90,10 @@ const EditTag = ({ isOpen, tagData, onSave, onCancel }) => {
                             value={additionalData}
                             onChange={handleAdditionalDataChange}
                             className="form-input"
-                            maxLength={MAX_LENGTH} // HTML-based max length
+                            maxLength={MAX_LENGTH}
                         />
                         <p className="char-limit-message">Max length: {MAX_LENGTH} characters.</p>
                     </div>
-
                     <div className="modal-actions">
                         <button type="submit" className="modal-button save-button">Save</button>
                         <button type="button" className="modal-button cancel-button" onClick={onCancel}>Cancel</button>

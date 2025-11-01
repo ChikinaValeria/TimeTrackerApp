@@ -5,13 +5,15 @@ import TagCard from './TagCard.jsx';
 import CreateTag from './CreateTag.jsx';
 import EditTag from './EditTag.jsx'; // NEW: Import EditTag component
 
+import { useFocusTrap } from './useFocusTrap.js';
 // --- Confirmation Modal Component (Redefined for TagsView Scope) ---
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
+    const modalRef = useFocusTrap(isOpen);
     if (!isOpen) return null;
 
     return (
         <div className="modal-backdrop">
-            <div className="modal-content">
+            <div className="modal-content" ref={modalRef}>
                 <h3 className="modal-title">{title}</h3>
                 <p className="modal-message">{message}</p>
                 <div className="modal-actions">

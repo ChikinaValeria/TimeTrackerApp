@@ -1,6 +1,7 @@
 // CreateTask.jsx (Modified: Integration of TagAssignment and fixed handleSubmit logic)
 
 import React, { useState } from 'react';
+import { useFocusTrap } from './useFocusTrap.js';
 import TagAssignment from './TagAssignment.jsx'; // Import the new component
 
 // CreateTask component as a modal for adding a new task.
@@ -17,6 +18,8 @@ const CreateTask = ({ isOpen, onCreate, onCancel, availableTags, postNewTag }) =
     const [assignedTagIds, setAssignedTagIds] = useState('');
 
 
+
+    const modalRef = useFocusTrap(isOpen);
     if (!isOpen) return null;
 
     // Handler to reset the form fields
@@ -71,10 +74,9 @@ const CreateTask = ({ isOpen, onCreate, onCancel, availableTags, postNewTag }) =
 
     return (
         <div className="modal-backdrop">
-            <div className="modal-content edit-modal-content">
+            <div className="modal-content edit-modal-content" ref={modalRef}>
                 <h3 className="modal-title">Create New Task</h3>
                 <form className="edit-form" onSubmit={handleSubmit}>
-
                     {/* Task Name Field */}
                     <div className="form-group">
                         <label htmlFor="newTaskName">Task Name:</label>
@@ -89,7 +91,6 @@ const CreateTask = ({ isOpen, onCreate, onCancel, availableTags, postNewTag }) =
                         />
                         <p className="char-limit-message">Max length: {MAX_TASK_LENGTH} characters.</p>
                     </div>
-
                     {/* Additional Data Field (using original logic for simplicity) */}
                     <div className="form-group">
                         <label htmlFor="newTaskAdditionalData">Additional Data (Max {MAX_TASK_LENGTH} Chars):</label>
@@ -103,21 +104,18 @@ const CreateTask = ({ isOpen, onCreate, onCancel, availableTags, postNewTag }) =
                         />
                         <p className="char-limit-message">Max length: {MAX_TASK_LENGTH} characters.</p>
                     </div>
-
                     {/* Tag Assignment Component */}
                     <TagAssignment
-                        initialTagIds={''} // New task starts with no tags
+                        initialTagIds={''}
                         availableTags={availableTags}
-                        onTagsChange={setAssignedTagIds} // Update the local state for tags
+                        onTagsChange={setAssignedTagIds}
                         onNewTagCreate={postNewTag}
                     />
-
                     <div className="modal-actions">
                         <button type="submit" className="modal-button save-button">Create Task</button>
                         <button
                             type="button"
                             className="modal-button cancel-button"
-                            // Call parent onCancel and reset local form state
                             onClick={() => { onCancel(); resetForm(); }}
                         >
                             Cancel
